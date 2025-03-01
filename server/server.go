@@ -18,12 +18,13 @@ var upgrader = websocket.Upgrader{
 var cubes = []struct {
 	X int     `json:"x"`
 	Y int     `json:"y"`
+	Z int    `json:"z"`
 	L float32 `json:"l"`
 }{
-	{X: 10, Y: 10, L: 1},
-	{X: 5, Y: 5, L: 1},
-	{X: 3, Y: 3, L: 2},
-	{X: 8, Y: 0, L: 50},
+	{X: 1, Y: 1,Z: 1, L: 1},
+	{X: 3, Y: 1,Z: 1, L: 1},
+	{X: -1, Y: 1,Z: 3, L: 1},
+	{X: 2, Y: 1,Z: 0, L: 1},
 }
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {

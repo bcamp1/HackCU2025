@@ -10,12 +10,23 @@ export class Scene {
 			0.1,
 			1000
 		)
-		this.renderer = new THREE.WebGLRenderer()
+		this.renderer = new THREE.WebGLRenderer({ antialias: true })
 		this.renderer.setSize(window.innerWidth, window.innerHeight)
 		this.container.appendChild(this.renderer.domElement)
 		this.cubes = []
 
-		this.camera.position.z = 20
+		const planeGeometry = new THREE.PlaneGeometry(100, 100)
+		const planeMaterial = new THREE.MeshBasicMaterial({
+			color: 0xaaaaaa,
+			side: THREE.DoubleSide,
+		})
+		const plane = new THREE.Mesh(planeGeometry, planeMaterial)
+		plane.rotation.x = -Math.PI / 2
+		this.scene.add(plane)
+
+		this.camera.position.set(0, 5, 11)
+		// Make sure the camera looks towards the origin (where the plane is centered)
+		this.camera.lookAt(new THREE.Vector3(0, 0, 0))
 
 		window.addEventListener("resize", this.onWindowResize.bind(this))
 	}
@@ -31,10 +42,19 @@ export class Scene {
 	}
 
 	addCube(x, y, z, l) {
-		this.geometry = new THREE.BoxGeometry(l, l, l)
-		this.material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-		const cube = new THREE.Mesh(this.geometry, this.material)
+		const geometry = new THREE.BoxGeometry(1, 1, 1)
+		const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+		const cube = new THREE.Mesh(geometry, material)
 		cube.position.set(x, y, z)
+		cube.castShadow = true
+		scene.add(cube)
+		const edges = new THREE.EdgesGeometry(cube.geometry)
+		const lineMaterial = new THREE.LineBasicMaterial({
+			color: 0x000000,
+			linewidth: 5,
+		})
+		const outline = new THREE.LineSegments(edges, lineMaterial)
+		cube.add(outline)
 		this.cubes.push(cube)
 		this.scene.add(cube)
 	}

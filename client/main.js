@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Scene } from "./scene.js"
 
 const socket = new WebSocket("ws://localhost:8080/ws")
