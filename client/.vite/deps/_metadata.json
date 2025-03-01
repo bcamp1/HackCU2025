@@ -2,14 +2,24 @@
   "hash": "31e5f243",
   "configHash": "6a532221",
   "lockfileHash": "e3b0c442",
-  "browserHash": "691aec5d",
+  "browserHash": "8ee18335",
   "optimized": {
     "three": {
       "src": "../../node_modules/three/build/three.module.js",
       "file": "three.js",
-      "fileHash": "6d4d8c43",
+      "fileHash": "865f3ed6",
+      "needsInterop": false
+    },
+    "three/addons/loaders/GLTFLoader.js": {
+      "src": "../../node_modules/three/examples/jsm/loaders/GLTFLoader.js",
+      "file": "three_addons_loaders_GLTFLoader__js.js",
+      "fileHash": "21753c25",
       "needsInterop": false
     }
   },
-  "chunks": {}
+  "chunks": {
+    "chunk-VCVPXQVX": {
+      "file": "chunk-VCVPXQVX.js"
+    }
+  }
 }

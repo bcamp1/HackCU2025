@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const container = document.getElementById('threejs-container');
 const scene = new THREE.Scene();
@@ -11,9 +12,19 @@ container.appendChild( renderer.domElement );
 const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
+cube.position.set(0, 1, 0);
 scene.add( cube );
 
-camera.position.z = 5;
+
+const planeGeometry = new THREE.PlaneGeometry(100, 100);
+const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xAAAAAA, side: THREE.DoubleSide });
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+plane.rotation.x = -Math.PI / 2;
+scene.add(plane);
+
+camera.position.set(0, 5, 11);
+// Make sure the camera looks towards the origin (where the plane is centered)
+camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 function animate() {
 	renderer.render( scene, camera );
