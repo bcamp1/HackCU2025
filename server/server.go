@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -15,6 +15,17 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+var cubes = []struct {
+	X int     `json:"x"`
+	Y int     `json:"y"`
+	L float32 `json:"l"`
+}{
+	{X: 100, Y: 100, L: 50},
+	{X: 200, Y: 200, L: 50},
+	{X: 300, Y: 300, L: 50},
+	{X: 400, Y: 400, L: 50},
+}
+
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -23,14 +34,17 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	for {
-		time.Sleep(20 * time.Millisecond)
-		var msg string
-		err := ws.WriteMessage(websocket.TextMessage, []byte("Hello"))
+		time.Sleep(10 * time.Millisecond)
+		circleJSON, err := json.Marshal(cubes)
 		if err != nil {
-			log.Printf("Error reading message: %v", err)
+			log.Printf("Error marshalling JSON: %v", err)
 			break
 		}
-		fmt.Printf("Received: %s\n", msg)
+		err = ws.WriteMessage(websocket.TextMessage, circleJSON)
+		if err != nil {
+			log.Printf("Error writing message: %v", err)
+			break
+		}
 	}
 }
 
