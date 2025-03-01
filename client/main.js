@@ -8,22 +8,6 @@ socket.addEventListener("open", function (event) {
 	console.log("Connected to WebSocket server")
 })
 
-const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-const cube = new THREE.Mesh( geometry, material );
-cube.position.set(0, 1, 0);
-scene.add( cube );
-
-
-const planeGeometry = new THREE.PlaneGeometry(100, 100);
-const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xAAAAAA, side: THREE.DoubleSide });
-const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-plane.rotation.x = -Math.PI / 2;
-scene.add(plane);
-
-camera.position.set(0, 5, 11);
-// Make sure the camera looks towards the origin (where the plane is centered)
-camera.lookAt(new THREE.Vector3(0, 0, 0));
 var circles = []
 
 socket.addEventListener("message", function (event) {
