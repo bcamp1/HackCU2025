@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -22,8 +23,9 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	for {
+		time.Sleep(20 * time.Millisecond)
 		var msg string
-		err := ws.ReadJSON(&msg)
+		err := ws.WriteMessage(websocket.TextMessage, []byte("Hello"))
 		if err != nil {
 			log.Printf("Error reading message: %v", err)
 			break
