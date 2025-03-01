@@ -1,0 +1,11 @@
+body { margin: 0; overflow: hidden; }
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 4px;
+}
+
+button { margin: 5px; }
