@@ -8,17 +8,25 @@ socket.addEventListener("open", function (event) {
 
 var circles = []
 
+const scene = new Scene("threejs-container")
 socket.addEventListener("message", function (event) {
 	circles = JSON.parse(event.data)
+
 	step()
 	// You can handle the incoming message here
 })
 
 function step() {
-	scene.rotateCube(0.5, 0.5)
+	if (scene.cubes.length > 0) {
+		scene.cubes.forEach((cube) => {
+			scene.scene.remove(cube)
+		})
+	}
+	circles.forEach((circle) => {
+		scene.addCube(circle.x, 0, circle.y, circle.l)
+	})
 }
 
-const scene = new Scene("threejs-container")
 scene.startAnimationLoop()
 
 // UI interaction: Rotate the cube when the button is clicked

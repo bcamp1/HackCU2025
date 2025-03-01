@@ -13,13 +13,9 @@ export class Scene {
 		this.renderer = new THREE.WebGLRenderer()
 		this.renderer.setSize(window.innerWidth, window.innerHeight)
 		this.container.appendChild(this.renderer.domElement)
+		this.cubes = []
 
-		this.geometry = new THREE.BoxGeometry(1, 1, 1)
-		this.material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-		this.cube = new THREE.Mesh(this.geometry, this.material)
-		this.scene.add(this.cube)
-
-		this.camera.position.z = 5
+		this.camera.position.z = 20
 
 		window.addEventListener("resize", this.onWindowResize.bind(this))
 	}
@@ -32,6 +28,15 @@ export class Scene {
 
 	animate() {
 		this.renderer.render(this.scene, this.camera)
+	}
+
+	addCube(x, y, z, l) {
+		this.geometry = new THREE.BoxGeometry(l, l, l)
+		this.material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+		const cube = new THREE.Mesh(this.geometry, this.material)
+		cube.position.set(x, y, z)
+		this.cubes.push(cube)
+		this.scene.add(cube)
 	}
 
 	startAnimationLoop() {
