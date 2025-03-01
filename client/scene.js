@@ -42,12 +42,11 @@ export class Scene {
 	}
 
 	addCube(x, y, z, l) {
-		const geometry = new THREE.BoxGeometry(1, 1, 1)
+		const geometry = new THREE.BoxGeometry(l, l, l)
 		const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
 		const cube = new THREE.Mesh(geometry, material)
 		cube.position.set(x, y, z)
 		cube.castShadow = true
-		scene.add(cube)
 		const edges = new THREE.EdgesGeometry(cube.geometry)
 		const lineMaterial = new THREE.LineBasicMaterial({
 			color: 0x000000,

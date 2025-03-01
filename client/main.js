@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as THREE from "three"
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import { Scene } from "./scene.js"
 
 const socket = new WebSocket("ws://localhost:8080/ws")
@@ -11,6 +11,7 @@ socket.addEventListener("open", function (event) {
 var circles = []
 
 const scene = new Scene("threejs-container")
+
 socket.addEventListener("message", function (event) {
 	circles = JSON.parse(event.data)
 
@@ -25,7 +26,7 @@ function step() {
 		})
 	}
 	circles.forEach((circle) => {
-		scene.addCube(circle.x, 0, circle.y, circle.l)
+		scene.addCube(circle.x, circle.y, circle.z, circle.l)
 	})
 }
 
