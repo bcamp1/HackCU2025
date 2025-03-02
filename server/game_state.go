@@ -16,7 +16,6 @@ func mapToGridLocation(m map[string]any) GridLocation {
 	}
 }
 
-
 type PlayerID int
 type EntityID int
 
@@ -44,32 +43,69 @@ func MakePlayer(id int) Player {
 
 type Game struct {
 	elapsedTime float64
-	deceased	[]EntityID
+	deceased    []EntityID
 	players     map[PlayerID]*Player
+	resources   map[EntityID]*Resource
 	entityIDs   map[EntityID]struct{}
 }
 
 type GameState struct {
-	ElapsedTime float64 `json:"elapsedTime"`
-	Deceased   []EntityID `json:"deceased"`
+	ElapsedTime float64                  `json:"elapsedTime"`
+	Deceased    []EntityID               `json:"deceased"`
 	Players     map[PlayerID]PlayerState `json:"players"`
+	Resources   map[EntityID]Resource    `json:"resources"`
 }
 
 type PlayerState struct {
-	Id        int `json:"id"`
-	Gold      float64 `json:"gold"`
-	Stone     float64 `json:"stone"`
-	Wood      float64 `json:"wood"`
-	Fighters  map[EntityID]Fighter `json:"fighters"`
-	Builders  map[EntityID]Builder `json:"builders"`
+	Id        int                   `json:"id"`
+	Gold      float64               `json:"gold"`
+	Stone     float64               `json:"stone"`
+	Wood      float64               `json:"wood"`
+	Fighters  map[EntityID]Fighter  `json:"fighters"`
+	Builders  map[EntityID]Builder  `json:"builders"`
 	Buildings map[EntityID]Building `json:"buildings"`
 }
 
+func (g *Game) AddResources(n int) {
+	takenTiles := make(map[GridLocation]struct{})
+	minX := -100
+	maxX := 100
+	minY := -100
+	maxY := 100
+	location := GridLocation{0, 0}
+	for range n {
+		chosen := false
+		for !chosen {
+			x := rand.Intn(maxX-minX) + minX
+			y := rand.Intn(maxY-minY) + minY
+			location = GridLocation{x, y}
+			_, exists := takenTiles[location]
+			if !exists {
+				chosen = true
+			}
+		}
+
+		diceRoll := rand.Float64()
+		if diceRoll < 0.3 {
+			g.createGoldResource(location)
+		} else if diceRoll < 0.6 {
+			g.createStoneResource(location)
+		} else {
+			g.createWoodResource(location)
+		}
+	}
+}
+
 func (g *Game) GetState() GameState {
-	state := GameState {}
+	state := GameState{}
 	state.ElapsedTime = g.elapsedTime
 	state.Deceased = g.deceased
 	state.Players = make(map[PlayerID]PlayerState)
+	state.Resources = make(map[EntityID]Resource)
+
+	for eid, resource := range g.resources {
+		state.Resources[eid] = *resource
+	}
 
 	for pid, player := range g.players {
 		fighters := make(map[EntityID]Fighter)
@@ -90,28 +126,29 @@ func (g *Game) GetState() GameState {
 			Gold:      player.gold,
 			Stone:     player.stone,
 			Wood:      player.wood,
-			Fighters: fighters,
-			Builders: builders,
+			Fighters:  fighters,
+			Builders:  builders,
 			Buildings: buildings,
 		}
 	}
 	return state
 }
 
-		
-
-
 func MakeTwoPlayerGame() Game {
 	player1 := MakePlayer(1)
 	player2 := MakePlayer(2)
 	playerMap := make(map[PlayerID]*Player)
+	resources := make(map[EntityID]*Resource)
 	playerMap[1] = &player1
 	playerMap[2] = &player2
-	return Game{
+	g := Game{
 		elapsedTime: 0,
 		players:     playerMap,
 		entityIDs:   make(map[EntityID]struct{}),
+		resources:   resources,
 	}
+	g.AddResources(100)
+	return g
 }
 
 func (g *Game) newEntityID() EntityID {
@@ -151,21 +188,21 @@ func (g *Game) update(dt float64) bool {
 			updateMovable(builder, dt)
 		}
 	}
-	g.getDeceased()	
+	g.getDeceased()
 	return true
 }
 
 func (g *Game) getMovable(id EntityID) Movable {
-		for _, player := range g.players {
-			fighter, exists := player.fighters[id]
-			if exists {
-				return fighter
-			}
-			builder, exists := player.builders[id]
-			if exists {
-				return builder
-			}
+	for _, player := range g.players {
+		fighter, exists := player.fighters[id]
+		if exists {
+			return fighter
 		}
+		builder, exists := player.builders[id]
+		if exists {
+			return builder
+		}
+	}
 	return nil
 }
 

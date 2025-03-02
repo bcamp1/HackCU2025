@@ -101,9 +101,9 @@ export class Scene {
 					const noiseVal = Math.random() * 4 - 10
 
 					// Apply the noise to each channel
-					let r = baseColor.r + noiseVal
-					let g = baseColor.g + noiseVal
-					let b = baseColor.b + noiseVal
+					let r = baseColor.r + 2*noiseVal;
+					let g = baseColor.g + noiseVal;
+					let b = baseColor.b + noiseVal;
 
 					// Clamp the values to valid [0, 255] range
 					r = Math.min(255, Math.max(0, r))
@@ -267,7 +267,6 @@ export class Scene {
 		)
 
 		if (e.button == 2) {
-			console.log(this.selectableObjects)
 			for (const selection of this.selectedUnits) {
 				if (selection.entityId) {
 					this.commandBuffer.push({
@@ -283,18 +282,21 @@ export class Scene {
 					})
 				}
 			}
+			this.helper.isDown = false;
 		} else if (e.button == 0) {
 			this.selectedUnits = []
 
 			this.selectionBox.startPoint.set(mX, mY)
-			this.helper.startPoint.set(e.clientX, e.clientY)
+			this.helper.startPoint.set(e.clientX, e.clientY);
+
+			this.helper.isDown = true;
 		}
 	}
 
 	onMouseMove(e) {
 		const mX = (e.clientX / window.innerWidth) * 2 - 1
 		const mY = -(e.clientY / window.innerHeight) * 2 + 1
-		if (this.helper.isDown && e.button == 0) {
+		if (this.helper.isDown) {
 			this.selectionBox.endPoint.set(mX, mY)
 			this.helper.onSelectMove(e)
 			// this.selectedUnits = this.selectionBox.select()
@@ -310,12 +312,11 @@ export class Scene {
 		if (e.button == 0) {
 			this.selectionBox.endPoint.set(mX, mY)
 
-			const dx = mX - this.selectionBox.startPoint.x
-			const dy = mY - this.selectionBox.startPoint.y
-			const distance = Math.sqrt(dx * dx + dy * dy)
-			console.log(distance)
-			this.helper.onSelectOver()
-			this.helper.isDown = false
+			const dx = mX - this.selectionBox.startPoint.x;
+			const dy = mY - this.selectionBox.startPoint.y;
+			const distance = Math.sqrt(dx * dx + dy * dy);
+			this.helper.onSelectOver();
+			this.helper.isDown = false;
 
 			if (distance < DRAG_THRESHOLD) {
 				// Optionally, you can do a raycast here for single object selection.

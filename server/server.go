@@ -35,8 +35,6 @@ type AttackCommand struct {
 	ATTACKER_ID int `json:"attacker_id"`
 }
 
-	
-
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -109,6 +107,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 											log.Printf("Invalid building type: %v", command["buildingType"])
 									}
 
+
 								case "createKnight":
 									pos := mapToFloat3(command["pos"].(map[string]any))
 									game.createKnight(pos, playerID)
@@ -117,13 +116,12 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 									pos := mapToFloat3(command["pos"].(map[string]any))
 									game.createBuilder(pos, playerID)
 
-
 								case "attack":
 									log.Printf("Attack command")
 
 								default:
 									log.Printf("Invalid command type: %v", key)
-							}
+								}
 						} else {
 							log.Printf("Invalid command format: %v", msgTemp[i][key])
 						}
@@ -173,8 +171,8 @@ func main() {
 	game.createBuilder(Float3{0, .25, 0}, 1)
 	game.createBuilder(Float3{0, .25, 1}, 1)
 	game.createBuilder(Float3{0, .25, -1}, 1)
-	game.addGold(1, 100)
-	game.addStone(1, 100)
+	game.addGold(1, 1000)
+	game.addStone(1, 1000)
 	game.addWood(1, 100)
 
 	go broadcastGameState()
