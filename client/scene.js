@@ -114,27 +114,32 @@ export class Scene {
 			this.mouseX,
 			this.mouseY
 		)
+		console.log(e.button)
+		if (e.button === 2) {
+			for (const selection of this.selectionBox.collection) {
+				if (!selection.isSelectable || !selection.isMoveable) {
+					continue
+				}
+				this.commandBuffer.push({
+					moveTroop: {
+						id: selection.entityId,
+						pos: {
+							x: clickLocation.x + Math.random() * 2 - 1,
+							y: 0.5,
+							z: clickLocation.z + Math.random() * 2 - 1,
+						},
+					},
+				})
+			}
+		}
 		for (const selection of this.selectionBox.collection) {
-			if (!selection.isSelectable || !selection.isMoveable) {
+			if (!selection.isSelectable) {
 				continue
 			}
-			this.commandBuffer.push({
-				moveTroop: {
-					id: selection.entityId,
-					pos: {
-						x: clickLocation.x,
-						y: 0.5,
-						z: clickLocation.z,
-					},
-				},
-			})
+
+			selection.children[0].material.color.set(0x000000)
 		}
 
-		console.log(this.commandBuffer)
-
-		for (const selection of this.selectionBox.collection) {
-			console.log(selection)
-		}
 		this.selectionBox.startPoint.set(this.mouseX, this.mouseY, 0.5)
 	}
 
@@ -144,7 +149,6 @@ export class Scene {
 				if (!this.selectionBox.collection[i].isSelectable) {
 					continue
 				}
-				this.selectionBox.collection[i].material.color.set(0x000000)
 			}
 
 			this.selectionBox.endPoint.set(
@@ -159,7 +163,8 @@ export class Scene {
 				if (!allSelected[i].isSelectable) {
 					continue
 				}
-				allSelected[i].material.color.set(0xffffff)
+				console.log(allSelected[i])
+				this.selectionBox.collection[i].children[0].material.color.set(0xff0000)
 			}
 		}
 	}
