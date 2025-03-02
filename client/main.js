@@ -113,7 +113,7 @@ async function InitScene() {
 			step()
 		} else {
 			console.log("Game state", gameState)
-			scene.playerId = gameState["playerId"]
+			scene.playerId = gameState["playerId"];
 		}
 	})
 
@@ -137,23 +137,25 @@ async function InitScene() {
 			const playerData = gameState["players"][pId]
 			Object.keys(playerData["fighters"]).forEach((key, _) => {
 				const fighter = playerData["fighters"][key]
-				if (scene.unitsMap[fighter.id] === undefined) {
-					scene.addUnit(
-						fighter.id,
-						pId,
-						fighter.unitType,
-						fighter.position.x,
-						fighter.position.y,
-						fighter.position.z
-					)
-				} else {
-					scene.moveUnit(
-						fighter.id,
-						fighter.position.x,
-						fighter.position.y,
-						fighter.position.z
-					)
-				}
+                if (pId) {
+                    if (scene.unitsMap[fighter.id] === undefined) {
+                        scene.addUnit(
+                            fighter.id,
+                            pId,
+                            fighter.unitType,
+                            fighter.position.x,
+                            fighter.position.y,
+                            fighter.position.z
+                        )
+                    } else {
+                        scene.moveUnit(
+                            fighter.id,
+                            fighter.position.x,
+                            fighter.position.y,
+                            fighter.position.z
+                        )
+                    }
+                }
 				// todo remove fighter if dead
 			})
 
@@ -263,12 +265,42 @@ async function loadModels() {
 	const wood = await loadModelResource(
 		"public/models/buildings/nodes/wood/wood.glb"
 	)
+<<<<<<< HEAD
+    const knight_red_idle = await loadModelResource(
+		"public/models/characters/knight_red/knight_red_idle.glb"
+	)
+    const knight_blue_idle = await loadModelResource(
+		"public/models/characters/knight_blue/knight_blue_idle.glb"
+	)
+    const knight_red_attack = await loadModelResource(
+		"public/models/characters/knight_red/knight_red_attack.glb"
+	)
+    const knight_blue_attack = await loadModelResource(
+		"public/models/characters/knight_blue/knight_blue_attack.glb"
+	)
+    const worker_red = await loadModelResource(
+		"public/models/characters/worker/worker_red.glb"
+	)
+    const worker_blue = await loadModelResource(
+		"public/models/characters/worker/worker_blue.glb"
+	)
+	modelsDict.house = [houseModel_blue, houseModel_red];
+	modelsDict.townhall = [townhallModel_blue, townhallModel_red];
+	modelsDict.barracks = [barracksModel_blue, barracksModel_red];
+    modelsDict.gold = goldModel;
+    modelsDict.stone = stoneModel;
+    modelsDict.wood = wood;
+    modelsDict.knight_attack = [knight_blue_attack, knight_red_attack];
+    modelsDict.knight_idle = [knight_blue_idle, knight_red_idle];
+    modelsDict.worker = [worker_blue, worker_red];
+=======
 	modelsDict.house = [houseModel_blue, houseModel_red]
 	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
 	modelsDict.barracks = [barracksModel_blue, barracksModel_red]
 	modelsDict.gold = goldModel
 	modelsDict.stone = stoneModel
 	modelsDict.wood = wood
+>>>>>>> 3bbaf5d4eb151e56fa4913f111312d3235e6a049
 
 	return modelsDict
 }
@@ -309,6 +341,33 @@ async function loadModel(path) {
 }
 
 async function loadModelResource(path) {
+	const loader = new GLTFLoader()
+
+	return new Promise((resolve, reject) => {
+		loader.load(
+			path,
+			(gltf) => {
+				let model = gltf.scene
+				model.rotation.x = -Math.PI / 2
+
+				model.traverse((child) => {
+					if (child.isMesh) {
+						child.castShadow = true
+					}
+				})
+				console.log("Model loaded")
+				resolve(model)
+			},
+			undefined,
+			(error) => {
+				console.error("Found an error", error)
+				reject(error)
+			}
+		)
+	})
+}
+
+async function loadCharacter(path) {
 	const loader = new GLTFLoader()
 
 	return new Promise((resolve, reject) => {
