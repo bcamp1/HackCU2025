@@ -268,7 +268,7 @@ export class Scene {
 
 		if (e.button == 2) {
 			for (const selection of this.selectedUnits) {
-				if (selection.entityId) {
+				if (selection.entityId && selection.isMoveable) {
 					this.commandBuffer.push({
 						moveUnit: {
 							id: selection.entityId,
@@ -350,14 +350,14 @@ export class Scene {
 				continue
 			}
 
-			selection.material.color.set(0x000000)
+			selection.material.color.set(selection.color)
 			selection.material.needsUpdate = true
 		}
 		// Update Selected
 		for (let i = 0; i < this.selectedUnits.length; i++) {
 			const object = this.selectedUnits[i]
 			if (!object.isSelectable) continue
-			object.material.color.set(0xff0000)
+			object.material.color.set(0xffffff - object.color)
 			object.material.needsUpdate = true
 		}
 	}
@@ -388,10 +388,10 @@ export class Scene {
 		let unit
 		switch (type) {
 			case "knight":
-				unit = new Knight(id)
+				unit = new Knight(id, pId)
 				break
 			case "builder":
-				unit = new Builder(id)
+				unit = new Builder(id, pId)
 				break
 			default:
 				console.error(`Unknown unit type: ${type}`)
@@ -399,7 +399,7 @@ export class Scene {
 		}
 		if (unit && unit.mesh) {
 			unit.mesh.position.set(x, y, z)
-			unit.mesh.isSelectable = true
+			unit.mesh.isSelectable = Number(pId) === Number(this.playerId)
 			unit.mesh.isMoveable = Number(pId) === Number(this.playerId)
 			unit.mesh.entityId = id
 			this.unitsMap[id] = unit

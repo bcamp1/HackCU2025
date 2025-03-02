@@ -10,7 +10,7 @@ async function InitScene() {
 	const scene = new Scene("threejs-container", models)
 	scene.startAnimationLoop()
 
-	const socket = new WebSocket("ws://localhost:8080/ws")
+	const socket = new WebSocket("ws://10.0.0.43:8080/ws")
 
 	socket.addEventListener("open", function (event) {
 		console.log("Connected to server", event.data)
@@ -108,6 +108,7 @@ async function InitScene() {
 	})
 
 	function step() {
+		console.log(gameState)
 		const playerData = gameState["players"][scene.playerId]
 		goldDisplay.innerText = playerData["gold"]
 		woodDisplay.innerText = playerData["wood"]
