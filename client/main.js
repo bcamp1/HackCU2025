@@ -268,11 +268,7 @@ async function loadModels() {
 	const wood = await loadModelResource(
 		"public/models/buildings/nodes/wood/wood.glb"
 	)
-<<<<<<< HEAD
-    const knight_red_idle = await loadModelResource(
-=======
 	const knight_red_idle = await loadModelResource(
->>>>>>> 90511b90c87245a3f21ca5b11f0d797d44cc9df3
 		"public/models/characters/knight_red/knight_red_idle.glb"
 	)
 	const knight_blue_idle = await loadModelResource(
@@ -290,7 +286,6 @@ async function loadModels() {
 	const worker_blue = await loadModelResource(
 		"public/models/characters/worker/worker_blue.glb"
 	)
-<<<<<<< HEAD
 	modelsDict.house = [houseModel_blue, houseModel_red];
 	modelsDict.townhall = [townhallModel_blue, townhallModel_red];
 	modelsDict.barracks = [barracksModel_blue, barracksModel_red];
@@ -300,17 +295,6 @@ async function loadModels() {
     modelsDict.knight_attack = [knight_blue_attack, knight_red_attack];
     modelsDict.knight_idle = [knight_blue_idle, knight_red_idle];
     modelsDict.worker = [worker_blue, worker_red];
-=======
-	modelsDict.house = [houseModel_blue, houseModel_red]
-	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
-	modelsDict.barracks = [barracksModel_blue, barracksModel_red]
-	modelsDict.gold = goldModel
-	modelsDict.stone = stoneModel
-	modelsDict.wood = wood
-	modelsDict.knight_attack = [knight_blue_attack, knight_red_attack]
-	modelsDict.knight_idle = [knight_blue_idle, knight_red_idle]
-	modelsDict.worker = [worker_blue, worker_red]
->>>>>>> 90511b90c87245a3f21ca5b11f0d797d44cc9df3
 
 	return modelsDict
 }
