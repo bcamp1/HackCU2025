@@ -10,7 +10,7 @@ async function InitScene() {
 	const scene = new Scene("threejs-container", models)
 	scene.startAnimationLoop()
 
-	const socket = new WebSocket("ws://localhost:8080/ws")
+	const socket = new WebSocket("ws://server-blue-dust-1345.fly.dev/:8080/ws")
 
 	socket.addEventListener("open", function (event) {
 		console.log("Connected to server", event.data)
@@ -309,16 +309,15 @@ async function loadModels() {
 	const worker_blue = await loadModelResource(
 		"public/models/characters/worker/worker_blue.glb"
 	)
-
-	modelsDict.house = [houseModel_blue, houseModel_red]
-	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
-	modelsDict.barracks = [barracksModel_blue, barracksModel_red]
-	modelsDict.gold = goldModel
-	modelsDict.stone = stoneModel
-	modelsDict.wood = wood
-	modelsDict.knight_attack = [knight_blue_attack, knight_red_attack]
-	modelsDict.knight_idle = [knight_blue_idle, knight_red_idle]
-	modelsDict.worker = [worker_blue, worker_red]
+	modelsDict.house = [houseModel_blue, houseModel_red];
+	modelsDict.townhall = [townhallModel_blue, townhallModel_red];
+	modelsDict.barracks = [barracksModel_blue, barracksModel_red];
+    modelsDict.gold = goldModel;
+    modelsDict.stone = stoneModel;
+    modelsDict.wood = wood;
+    modelsDict.knight_attack = [knight_blue_attack, knight_red_attack];
+    modelsDict.knight_idle = [knight_blue_idle, knight_red_idle];
+    modelsDict.worker = [worker_blue, worker_red];
 
 	return modelsDict
 }
