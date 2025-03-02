@@ -6,6 +6,7 @@ type Movable interface {
 	GetPosition() Float3
 	SetPosition(Float3)
 	GetSpeed() float64
+	SetAggro(bool)
 }
 
 type Killable interface {
@@ -73,6 +74,15 @@ func (g *Game) createKnight(position Float3, id PlayerID) *Fighter {
 	return knight
 }
 
+func (g *Game) getFighter (id EntityID) *Fighter {
+	for _, player := range g.players {
+		if fighter, ok := player.fighters[id]; ok {
+			return fighter
+		}
+	}
+	return nil
+}
+
 func (f *Fighter) GetPosition() Float3 {
 	return f.Position
 }
@@ -97,6 +107,10 @@ func (f *Fighter) GetHealth() float64 {
 	return f.Health
 }
 
+func (f *Fighter) SetAggro(a bool) {
+	f.Aggro = a 
+}
+
 func (f *Fighter) SetHealth(h float64) {
 	if h > f.MaxHealth {
 		h = f.MaxHealth
@@ -118,6 +132,7 @@ type Builder struct {
 	Gold           float64   `json:"gold"`
 	Stone          float64   `json:"stone"`
 	Wood           float64   `json:"wood"`
+	Aggro          bool      `json:"aggro"`
 	Health         float64   `json:"health"`
 	MaxHealth      float64   `json:"max_health"`
 	ResourceTarget *Resource `json:"resource_target"`
@@ -132,6 +147,7 @@ func (g *Game) createBuilder(position Float3, id PlayerID) *Builder {
 		Gold:         0,
 		Stone:        0,
 		Wood:         0,
+		Aggro:        false,
 		Health:       builderMaxHealth,
 		MaxHealth:    builderMaxHealth,
 	}
@@ -162,6 +178,11 @@ func (b *Builder) SetGoalPosition(p Float3) {
 func (b *Builder) GetHealth() float64 {
 	return b.Health
 }
+
+func (b *Builder) SetAggro(a bool) {
+	b.Aggro = a
+}	
+
 
 func (b *Builder) SetHealth(h float64) {
 	if h > b.MaxHealth {

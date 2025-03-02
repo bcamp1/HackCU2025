@@ -93,8 +93,16 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 								pos := mapToFloat3(command["pos"].(map[string]any))
 								id := EntityID(int(command["id"].(float64)))
 								moveType := command["type"].(string)
-								log.Printf("Move type: %v", moveType)
 								unit := game.getMovable(id)
+								if moveType == "aggro" {
+									unit.SetAggro(true)
+								} else {
+									fighter := game.getFighter(id)
+									if fighter != nil {
+										fighter.TargetEntityId = -1
+									}
+									unit.SetAggro(false)
+								}
 								if unit != nil {
 									unit.SetGoalPosition(pos)
 								}
@@ -126,6 +134,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 							default:
 								log.Printf("Invalid command type: %v", key)
 							}
+
 						} else {
 							log.Printf("Invalid command format: %v", msgTemp[i][key])
 						}
