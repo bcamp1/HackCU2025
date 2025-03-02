@@ -80,9 +80,9 @@ async function InitScene() {
         step()
         // You can handle the incoming message here
     })
+
 }
 var gameState = {}
-const scene = new Scene("threejs-container")
 
 socket.addEventListener("message", function (event) {
 	gameState = JSON.parse(event.data)
