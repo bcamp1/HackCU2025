@@ -39,6 +39,16 @@ async function InitScene() {
 		scene.isBuilding = true
 		scene.currentBuildingType = "barracks"
 	})
+	const addKnight = document.getElementById("addKnight")
+	addKnight.addEventListener("click", () => {
+		scene.commandBuffer.push({ createKnight: { some: "knight" } })
+	})
+	// ADD BARRACKS BUTTON
+	const addWorker = document.getElementById("addWorker")
+	addWorker.addEventListener("click", () => {
+		scene.commandBuffer.push({ createBuilder: { some: "builder" } })
+	})
+
 	const goldDisplay = document.getElementById("gold")
 	const woodDisplay = document.getElementById("wood")
 	const stoneDisplay = document.getElementById("stone")
@@ -108,6 +118,7 @@ async function InitScene() {
 	})
 
 	function step() {
+		console.log("Game state", gameState)
 		const playerData = gameState["players"][scene.playerId]
 		goldDisplay.innerText = Math.round(playerData["gold"])
 		woodDisplay.innerText = Math.round(playerData["wood"])
@@ -145,6 +156,32 @@ async function InitScene() {
 				}
 				// todo remove fighter if dead
 			})
+
+			if (
+				Object.keys(playerData["buildings"]).some(
+					(key, _) =>
+						playerData["buildings"][key].buildingType === "townhall" &&
+						playerData["buildings"][key].cooldown <= 0 &&
+						playerData.gold > 50
+				)
+			) {
+				addWorker.disabled = false
+			} else {
+				addWorker.disabled = true
+			}
+			if (
+				Object.keys(playerData["buildings"]).some(
+					(key, _) =>
+						playerData["buildings"][key].buildingType === "barracks" &&
+						playerData["buildings"][key].cooldown <= 0 &&
+						playerData.gold > 50
+				)
+			) {
+				addKnight.disabled = false
+			} else {
+				addKnight.disabled = true
+			}
+
 			Object.keys(playerData["buildings"]).forEach((key, _) => {
 				const building = playerData["buildings"][key]
 				if (scene.unitsMap[building.id] === undefined) {
