@@ -2,12 +2,16 @@ import * as THREE from "three"
 import { SelectionBox } from "three/addons/interactive/SelectionBox.js"
 import { SelectionHelper } from "three/addons/interactive/SelectionHelper.js"
 import { Building } from "./building.js"
-import { Knight } from "./fighters.js"
+import { Knight, Builder } from "./guys.js"
 
 export class Scene {
 	constructor(containerId, models) {
 		this.keysPressed = {}
 		this.buildings = []
+		this.buildingsMap = {}
+		this.playerId
+		this.builderIds = {}
+		this.unitsMap = {}
 		this.isBuilding = false
 		this.canBuild = false
 		this.currentBuildingType = false
@@ -17,32 +21,31 @@ export class Scene {
 		this.zoom = 1;
 		const Orthographic = true;
 
-		this.fighters = {}
 		this.commandBuffer = []
 		this.container = document.getElementById(containerId)
 		this.scene = new THREE.Scene()
 		this.scene.background = new THREE.Color(0x333344)
-		
+
 		if (Orthographic) {
-			const frustumSize = 20;
-			const aspect = window.innerWidth / window.innerHeight;
+			const frustumSize = 20
+			const aspect = window.innerWidth / window.innerHeight
 			this.camera = new THREE.OrthographicCamera(
-				-frustumSize * aspect / 2,  // left
-				frustumSize * aspect / 2,  // right
-				frustumSize / 2,           // top
-				-frustumSize / 2,           // bottom
-				0.1,                       // near
-				1000                       // far
-			);
-			this.camera.position.set(200, 200, 200);
-			this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+				(-frustumSize * aspect) / 2, // left
+				(frustumSize * aspect) / 2, // right
+				frustumSize / 2, // top
+				-frustumSize / 2, // bottom
+				0.1, // near
+				1000 // far
+			)
+			this.camera.position.set(200, 200, 200)
+			this.camera.lookAt(new THREE.Vector3(0, 0, 0))
 		} else {
 			this.camera = new THREE.PerspectiveCamera(
-				75, 
-				window.innerWidth / window.innerHeight, 
+				75,
+				window.innerWidth / window.innerHeight,
 				0.1,
 				1000
-			);
+			)
 			this.camera.position.set(10, 20, 10)
 			this.camera.lookAt(new THREE.Vector3(0, 0, 0))
 		}
@@ -159,14 +162,41 @@ export class Scene {
 		this.scene.add(this.grid)
 
 		// Temporary Buildings
-		this.TEMP_house = new Building("house", 0, 0, 0, this.scene, this.modelsDict);
-		this.TEMP_house.setVisible(true);
+		this.TEMP_house = new Building(
+			"house",
+			0,
+			0,
+			0,
+			0,
+			0,
+			this.scene,
+			this.modelsDict
+		)
+		this.TEMP_house.setVisible(true)
 
-		this.TEMP_townhall = new Building("townhall", 0, 0, 0, this.scene, this.modelsDict)
-		this.TEMP_townhall.setVisible(false);
+		this.TEMP_townhall = new Building(
+			"townhall",
+			0,
+			0,
+			0,
+			0,
+			0,
+			this.scene,
+			this.modelsDict
+		)
+		this.TEMP_townhall.setVisible(false)
 
-		this.TEMP_barracks = new Building("barracks", 0, 0, 0, this.scene, this.modelsDict)
-		this.TEMP_barracks.setVisible(false);
+		this.TEMP_barracks = new Building(
+			"barracks",
+			0,
+			0,
+			0,
+			0,
+			0,
+			this.scene,
+			this.modelsDict
+		)
+		this.TEMP_barracks.setVisible(false)
 
 		// TODO: Scene Init
 
@@ -198,13 +228,13 @@ export class Scene {
 				light.shadow.mapSize.width = 2048*3;
 				light.shadow.mapSize.height = 2048*3;
 
-				light.shadow.camera.left = -d;
-				light.shadow.camera.right = d;
-				light.shadow.camera.top = d;
-				light.shadow.camera.bottom = -d;
-				light.shadow.camera.near = 0.1;
-				light.shadow.camera.far = 500;
-				light.shadow.camera.updateProjectionMatrix();
+				light.shadow.camera.left = -d
+				light.shadow.camera.right = d
+				light.shadow.camera.top = d
+				light.shadow.camera.bottom = -d
+				light.shadow.camera.near = 0.1
+				light.shadow.camera.far = 500
+				light.shadow.camera.updateProjectionMatrix()
 			}
 		})
 
@@ -229,7 +259,7 @@ export class Scene {
 					continue
 				}
 				this.commandBuffer.push({
-					moveTroop: {
+					moveUnit: {
 						id: selection.entityId,
 						pos: {
 							x: clickLocation.x + Math.random() * 2 - 1,
@@ -310,27 +340,34 @@ export class Scene {
 		this.scene.add(cube)
 	}
 
-	addFighter(id, player, type, x, y, z) {
-		let fighter
+	addUnit(id, pId, type, x, y, z) {
+		let unit
 		switch (type) {
 			case "knight":
-				fighter = new Knight(id)
+				unit = new Knight(id)
+				break
+			case "builder":
+				unit = new Builder(id)
 				break
 			default:
-				fighter = new Knight(id)
-				break
+				console.error(`Unknown unit type: ${type}`)
+				return
 		}
-		fighter.mesh.position.set(x, y, z)
-		fighter.mesh.isSelectable = true
-		fighter.mesh.isMoveable = true
-		fighter.mesh.entityId = id
-		this.fighters[player][id] = fighter
-		this.scene.add(fighter.mesh)
+		if (unit && unit.mesh) {
+			unit.mesh.position.set(x, y, z)
+			unit.mesh.isSelectable = true
+			unit.mesh.isMoveable = Number(pId) === Number(this.playerId)
+			unit.mesh.entityId = id
+			this.unitsMap[id] = unit
+			this.scene.add(unit.mesh)
+		} else {
+			console.error(`Failed to create unit of type: ${type}`)
+		}
 	}
 
-	moveFighter(id, player, x, y, z) {
-		const fighter = this.fighters[player][id]
-		fighter.mesh.position.set(x, y, z)
+	moveUnit(id, x, y, z) {
+		const unit = this.unitsMap[id]
+		unit.mesh.position.set(x, unit.height / 2, z)
 	}
 
 	startAnimationLoop() {
@@ -344,21 +381,20 @@ export class Scene {
 
 	handleClick(mouseButton, mouseX, mouseY) {
 		const clickLocation = this.getMouseCoordinatesOnGroundPlane(mouseX, mouseY)
-		
+
 		if (this.isBuilding) {
 			if (this.canBuild) {
 				if (mouseButton == 0 && clickLocation) {
 					// Left click
 					const buildingCoordinates = this.getGridCoordinates(clickLocation)
-					const newBuilding = new Building(
-						this.currentBuildingType,
-						buildingCoordinates.x,
-						buildingCoordinates.y,
-						buildingCoordinates.z,
-						this.scene,
-						this.modelsDict
-					)
-					this.buildings.push(newBuilding)
+					this.commandBuffer.push({
+						placeHouse: {
+							pos: {
+								x: buildingCoordinates.x,
+								z: buildingCoordinates.z,
+							},
+						},
+					})
 					this.isBuilding = false
 					return
 				} else {
@@ -372,11 +408,26 @@ export class Scene {
 		}
 	}
 
+	createBuilding(id, pId, type, x, z) {
+		const newBuilding = new Building(
+			type,
+			id,
+			pId,
+			x,
+			0,
+			z,
+			this.scene,
+			this.modelsDict
+		)
+		this.buildings.push(newBuilding)
+		this.buildingsMap[id] = newBuilding
+	}
+
 	checkGridCollisions(gridLocation, width, height) {
 		var collide = false
 		const buildingPositions = []
 		this.buildings.forEach((building) => {
-			const buildingPos = building.gridPosition;
+			const buildingPos = building.gridPosition
 			for (var x = 0; x < building.width; x++) {
 				for (var z = 0; z < building.height; z++) {
 					const posX = buildingPos.x + x
@@ -480,10 +531,10 @@ export class Scene {
 				} else if (this.currentBuildingType == "townhall") {
 					currentTEMP = this.TEMP_townhall
 				} else if (this.currentBuildingType == "barracks") {
-					currentTEMP = this.TEMP_barracks;
+					currentTEMP = this.TEMP_barracks
 				}
 
-				currentTEMP.setVisible(true);
+				currentTEMP.setVisible(true)
 				const gridMousePos = this.getGridCoordinates(groundMousePos)
 				currentTEMP.moveTo(gridMousePos)
 				const collision = this.checkGridCollisions(
@@ -492,17 +543,17 @@ export class Scene {
 					currentTEMP.height
 				)
 				if (collision) {
-					currentTEMP.setAppearance_CantBuild();
+					currentTEMP.setAppearance_CantBuild()
 					this.canBuild = false
 				} else {
-					currentTEMP.setAppearance_CanBuild();
+					currentTEMP.setAppearance_CanBuild()
 					this.canBuild = true
 				}
 			}
 		} else {
-			this.TEMP_house.setVisible(false);
-			this.TEMP_townhall.setVisible(false);
-			this.TEMP_barracks.setVisible(false);
+			this.TEMP_house.setVisible(false)
+			this.TEMP_townhall.setVisible(false)
+			this.TEMP_barracks.setVisible(false)
 			this.canBuild = false
 		}
 		this.renderer.render(this.scene, this.camera)

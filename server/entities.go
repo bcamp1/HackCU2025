@@ -29,7 +29,7 @@ func updateMovable(m Movable, dt float64) {
 
 type Fighter struct {
 	Id           EntityID `json:"id"`
-	FighterType  string  `json:"fighterType"`
+	UnitType  string  `json:"unitType"`
 	Position     Float3 `json:"position"`
 	GoalPosition Float3 `json:"goalPosition"`
 	Strength     float64 `json:"strength"`
@@ -44,7 +44,7 @@ func (g *Game) createKnight(position Float3, id PlayerID) *Fighter {
 
 	knight := &Fighter{
 		Id:           entityId,
-		FighterType:  "knight",
+		UnitType:  "knight",
 		Position:     position,
 		GoalPosition: position,
 		Strength:     40,
@@ -83,11 +83,27 @@ const builderMaxHealth float64 = 100
 type Builder struct {
 	Id           EntityID `json:"id"`
 	Position     Float3   `json:"position"`
+	UnitType	 string   `json:"unitType"`
 	GoalPosition Float3   `json:"goalPosition"`
 	Gold         float64  `json:"gold"`
 	Stone        float64  `json:"stone"`
 	Wood         float64  `json:"wood"`
 	Health       float64  `json:"health"`
+}
+
+func (g *Game) createBuilder(position Float3, id PlayerID) *Builder {
+	entityId := g.newEntityID()
+	builder := &Builder{
+		Id:           entityId,
+		Position:    position,
+		GoalPosition: position,
+		Gold:         0,
+		Stone:        0,
+		Wood:         0,
+		Health:       builderMaxHealth,
+	}
+	g.players[id].builders[entityId] = builder
+	return builder
 }
 
 func (b *Builder) GetPosition() Float3 {
@@ -116,9 +132,39 @@ type Building struct {
 	Id           EntityID    `json:"id"`
 	BuildingType string      `json:"buildingType"`
 	Position     GridLocation `json:"position"`
-	Size         Float3      `json:"size"`
+	// Size         Float3      `json:"size"`
 	MaxHealth    float64     `json:"maxHealth"`
 	Health       float64     `json:"health"`
 	Progress     float64     `json:"progress"`
 	BuildTime    float64     `json:"buildTime"`
+}
+
+func (g *Game) createHouse(position GridLocation, playerId PlayerID) *Building {
+	entityId := g.newEntityID()
+	building := &Building{
+		Id:           entityId,
+		BuildingType: "house",
+		Position:     position,
+		MaxHealth:    500,
+		Health:       500,
+		Progress:     0,
+		BuildTime:    10,
+	}
+	g.players[playerId].buildings[entityId] = building
+	return building
+}
+
+func (g *Game) createTownHall(position GridLocation, playerId PlayerID) *Building {
+	entityId := g.newEntityID()
+	building := &Building{
+		Id:           entityId,
+		BuildingType: "townhall",
+		Position:     position,
+		MaxHealth:    1000,
+		Health:       1000,
+		Progress:     0,
+		BuildTime:    10,
+	}
+	g.players[playerId].buildings[entityId] = building
+	return building
 }
