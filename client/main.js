@@ -108,7 +108,6 @@ async function InitScene() {
 	})
 
 	function step() {
-		console.log(gameState)
 		const playerData = gameState["players"][scene.playerId]
 		goldDisplay.innerText = playerData["gold"]
 		woodDisplay.innerText = playerData["wood"]
@@ -148,7 +147,7 @@ async function InitScene() {
 			})
 			Object.keys(playerData["buildings"]).forEach((key, _) => {
 				const building = playerData["buildings"][key]
-				if (scene.buildingsMap[building.id] === undefined) {
+				if (scene.unitsMap[building.id] === undefined) {
 					scene.createBuilding(
 						building.id,
 						pId,
@@ -180,20 +179,20 @@ async function InitScene() {
 				}
 				// todo remove building if dead
 			})
-            Object.keys(gameState["resources"]).forEach((key, _) => {
-                const resourceNode = gameState["resources"][key];
-                if (scene.buildingsMap[resourceNode.id] === undefined) {
+			Object.keys(gameState["resources"]).forEach((key, _) => {
+				const resourceNode = gameState["resources"][key]
+				if (scene.unitsMap[resourceNode.id] === undefined) {
 					scene.createResourceNode(
 						resourceNode.id,
 						resourceNode.resourceType,
 						resourceNode.position.x,
 						resourceNode.position.z,
-                        resourceNode.gold,
-                        resourceNode.stone,
-                        resourceNode.wood
+						resourceNode.gold,
+						resourceNode.stone,
+						resourceNode.wood
 					)
 				}
-            })
+			})
 		})
 	}
 }
@@ -209,21 +208,21 @@ async function loadModels() {
 	const barracksModel = await loadModel(
 		"public/models/buildings/barracks/barracks_full.glb"
 	)
-    const goldModel = await loadModelResource(
+	const goldModel = await loadModelResource(
 		"public/models/buildings/nodes/gold/gold.glb"
 	)
-    const stoneModel = await loadModelResource(
+	const stoneModel = await loadModelResource(
 		"public/models/buildings/nodes/stone/stone.glb"
 	)
-    const wood = await loadModelResource(
+	const wood = await loadModelResource(
 		"public/models/buildings/nodes/wood/wood.glb"
 	)
-	modelsDict.house = houseModel;
-	modelsDict.townhall = townhallModel;
-	modelsDict.barracks = barracksModel;
-    modelsDict.gold = goldModel;
-    modelsDict.stone = stoneModel;
-    modelsDict.wood = wood;
+	modelsDict.house = houseModel
+	modelsDict.townhall = townhallModel
+	modelsDict.barracks = barracksModel
+	modelsDict.gold = goldModel
+	modelsDict.stone = stoneModel
+	modelsDict.wood = wood
 
 	return modelsDict
 }

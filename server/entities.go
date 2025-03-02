@@ -103,77 +103,9 @@ func (f *Fighter) SetHealth(h float64) {
 	f.Health = h
 }
 
-func (g *Game) getClosestEnemy(f *Fighter, playerId PlayerID) *Fighter {
-	var closest *Fighter
-	var closestDistance float64
-	for _, player := range g.players {
-		if PlayerID(player.id) == playerId {
-			continue
-		}
-		for _, enemy := range player.fighters {
-			distance := enemy.Position.subtract(f.Position).length()
-			if distance > aggroRadius {
-				continue
-			}
-			if closest == nil || distance < closestDistance {
-				closest = enemy
-				closestDistance = distance
-			}
-		}
-	}
-	return closest
-}
-
-func (g *Game) getKillable(id EntityID) Killable {
-	for _, player := range g.players {
-		if fighter, exists := player.fighters[id]; exists {
-			return fighter
-		}
-		if builder, exists := player.builders[id]; exists {
-			return builder
-		}
-		if building, exists := player.buildings[id]; exists {
-			return building
-		}
-	}
-	return nil
-}
-
-func (f *Fighter) huntDown(dt float64) {
-	target := game.getKillable(f.TargetEntityId)
-	if target == nil {
-		return
-	}
-	if target.GetHealth() <= 0 {
-		f.TargetEntityId = -1
-		return
-	}
-	if f.Position.subtract(target.GetPosition()).length() <= f.AreaOfAttack {
-		if f.TimeTillNextAttack <= 0 {
-			target.SetHealth(target.GetHealth() - f.Strength)	
-			f.TimeTillNextAttack = f.AttackDelay
-			if target.GetHealth() <= 0 {
-				f.TargetEntityId = -1
-			}
-		}
-
-	} else {
-		f.SetGoalPosition(target.GetPosition().subtract(Float3{X: .5, Y: .5, Z: .5}))
-	}
-	f.TimeTillNextAttack -= dt
-}
-
-func (f *Fighter) generalAttack(dt float64) {
-	closestEnemy := game.getClosestEnemy(f, 1)
-	if(closestEnemy == nil) {
-		return
-	}
-	f.TargetEntityId = closestEnemy.Id
-	f.huntDown(dt)
-}
 
 const builderSpeed float64 = 1
-const builderMaxHealth float64 = 100
+const builderMaxHealth float64 = 50
 
 type Builder struct {
 	Id           EntityID `json:"id"`
@@ -184,6 +116,7 @@ type Builder struct {
 	Stone        float64  `json:"stone"`
 	Wood         float64  `json:"wood"`
 	Health       float64  `json:"health"`
+	MaxHealth    float64  `json:"maxHealth"`
 }
 
 func (g *Game) createBuilder(position Float3, id PlayerID) *Builder {
@@ -196,6 +129,7 @@ func (g *Game) createBuilder(position Float3, id PlayerID) *Builder {
 		Stone:        0,
 		Wood:         0,
 		Health:       builderMaxHealth,
+		MaxHealth:    builderMaxHealth,
 	}
 	g.players[id].builders[entityId] = builder
 	return builder
@@ -226,7 +160,10 @@ func (b *Builder) GetHealth() float64 {
 }
 
 func (b *Builder) SetHealth(h float64) {
-	b.Health = max(h, builderMaxHealth)
+if h > b.MaxHealth {
+		h = b.MaxHealth
+	}
+	b.Health = h
 }
 
 // Building types
@@ -253,7 +190,10 @@ func (b *Building) GetHealth() float64 {
 }
 
 func (b *Building) SetHealth(h float64) {
-	b.Health = max(h, b.MaxHealth)
+	if h > b.MaxHealth {
+		h = b.MaxHealth
+	}
+	b.Health = h
 }
 
 func (b *Building) GetPosition() Float3 {

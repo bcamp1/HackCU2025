@@ -44,6 +44,11 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 
 	connMutex.Lock()
 	playerID := PlayerID(len(connections) + 1)
+	if playerID > 2 {
+		log.Printf("Too many players connected")
+		connMutex.Unlock()
+		return
+	}
 	log.Printf("Player %v connected", playerID)
 	connections[ws] = playerID
 
