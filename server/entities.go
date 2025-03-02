@@ -110,16 +110,13 @@ func (g *Game) getClosestEnemy(f *Fighter, playerId PlayerID) *Fighter {
 		if PlayerID(player.id) == playerId {
 			continue
 		}
-		for _, fighter := range player.fighters {
-			if fighter.Id == f.Id {
-				continue
-			}
-			distance := fighter.Position.subtract(f.Position).length()
+		for _, enemy := range player.fighters {
+			distance := enemy.Position.subtract(f.Position).length()
 			if distance > aggroRadius {
 				continue
 			}
 			if closest == nil || distance < closestDistance {
-				closest = fighter
+				closest = enemy
 				closestDistance = distance
 			}
 		}

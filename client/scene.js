@@ -101,9 +101,9 @@ export class Scene {
 					const noiseVal = Math.random() * 4 - 10
 
 					// Apply the noise to each channel
-					let r = baseColor.r + 2*noiseVal;
-					let g = baseColor.g + noiseVal;
-					let b = baseColor.b + noiseVal;
+					let r = baseColor.r + 2 * noiseVal
+					let g = baseColor.g + noiseVal
+					let b = baseColor.b + noiseVal
 
 					// Clamp the values to valid [0, 255] range
 					r = Math.min(255, Math.max(0, r))
@@ -282,14 +282,14 @@ export class Scene {
 					})
 				}
 			}
-			this.helper.isDown = false;
+			this.helper.isDown = false
 		} else if (e.button == 0) {
 			this.selectedUnits = []
 
 			this.selectionBox.startPoint.set(mX, mY)
-			this.helper.startPoint.set(e.clientX, e.clientY);
+			this.helper.startPoint.set(e.clientX, e.clientY)
 
-			this.helper.isDown = true;
+			this.helper.isDown = true
 		}
 	}
 
@@ -312,11 +312,11 @@ export class Scene {
 		if (e.button == 0) {
 			this.selectionBox.endPoint.set(mX, mY)
 
-			const dx = mX - this.selectionBox.startPoint.x;
-			const dy = mY - this.selectionBox.startPoint.y;
-			const distance = Math.sqrt(dx * dx + dy * dy);
-			this.helper.onSelectOver();
-			this.helper.isDown = false;
+			const dx = mX - this.selectionBox.startPoint.x
+			const dy = mY - this.selectionBox.startPoint.y
+			const distance = Math.sqrt(dx * dx + dy * dy)
+			this.helper.onSelectOver()
+			this.helper.isDown = false
 
 			if (distance < DRAG_THRESHOLD) {
 				// Optionally, you can do a raycast here for single object selection.
@@ -404,7 +404,9 @@ export class Scene {
 			unit.mesh.entityId = id
 			this.unitsMap[id] = unit
 			this.scene.add(unit.mesh)
-			this.selectableObjects.push(unit.mesh)
+			if (unit.mesh.isMoveable) {
+				this.selectableObjects.push(unit.mesh)
+			}
 		} else {
 			console.error(`Failed to create unit of type: ${type}`)
 		}

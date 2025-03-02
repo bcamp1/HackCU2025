@@ -180,6 +180,7 @@ func (g *Game) update(dt float64) bool {
 				fighter.huntDown(dt)
 			} else {
 				if( fighter.Position.subtract(fighter.GoalPosition).length() == 0 || fighter.Aggro) {
+					// fmt.Printf("Player %v fighter %v is attacking\n", player.id, fighter.Id)
 					fighter.generalAttack(dt)
 				}
 			}
