@@ -207,7 +207,8 @@ type Building struct {
 	MaxHealth float64 `json:"maxHealth"`
 	Health    float64 `json:"health"`
 	Progress  float64 `json:"progress"`
-	BuildTime float64 `json:"buildTime"`
+	Cooldown float64 `json:"cooldown"`
+	MaxCooldown float64 `json:"maxCooldown"`
 }
 
 func (b *Building) GetHealth() float64 {
@@ -252,7 +253,8 @@ func (g *Game) createHouse(position GridLocation, playerId PlayerID) *Building {
 		Cost:         *cost,
 		Health:       500,
 		Progress:     0,
-		BuildTime:    10,
+		Cooldown:    0,
+		MaxCooldown:    10,
 	}
 	g.players[playerId].buildings[entityId] = building
 	return building
@@ -275,7 +277,8 @@ func (g *Game) createTownHall(position GridLocation, playerId PlayerID) *Buildin
 		MaxHealth:    1000,
 		Health:       1000,
 		Progress:     0,
-		BuildTime:    10,
+		Cooldown:    0,
+		MaxCooldown:    0,
 	}
 	g.players[playerId].buildings[entityId] = building
 	return building
@@ -298,7 +301,7 @@ func (g *Game) createBarracks(position GridLocation, playerId PlayerID) *Buildin
 		Cost:         *cost,
 		Health:       500,
 		Progress:     0,
-		BuildTime:    10,
+		Cooldown:    10,
 	}
 	g.players[playerId].buildings[entityId] = building
 	return building

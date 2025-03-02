@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"net/http"
 	"sync"
 	"time"
@@ -121,15 +122,27 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 								}
 
 							case "createKnight":
-								pos := mapToFloat3(command["pos"].(map[string]any))
-								game.createKnight(pos, playerID)
+								salt := Float3{rand.Float64()*10, rand.Float64()*10, rand.Float64()*10}
+								for _, b := range game.players[playerID].buildings {
+									if b.BuildingType == "barracks"{
+										b.Cooldown = b.MaxCooldown
+										game.players[playerID].gold -= 50
+										game.createKnight(game.players[playerID].primaryTownHall.GetPosition().add(salt), playerID)
+										break
+									}
+								}
 
 							case "createBuilder":
-								pos := mapToFloat3(command["pos"].(map[string]any))
-								game.createBuilder(pos, playerID)
+								salt := Float3{rand.Float64()*10, rand.Float64()*10, rand.Float64()*10}
+								for _, b := range game.players[playerID].buildings {
+									if b.BuildingType == "townhall"{
+										game.players[playerID].gold -= 50
+										b.Cooldown = b.MaxCooldown
+										game.createBuilder(game.players[playerID].primaryTownHall.GetPosition().add(salt), playerID)
+										break
+									}
+								}
 
-							case "attack":
-								log.Printf("Attack command")
 
 							default:
 								log.Printf("Invalid command type: %v", key)
