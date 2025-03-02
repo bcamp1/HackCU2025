@@ -72,7 +72,6 @@ async function InitScene() {
 	window.addEventListener(
 		"wheel",
 		(event) => {
-			console.log(scene.zoom)
 			const minZoom = 0.5
 			const maxZoom = 3.0
 			const zoomSensitivity = 0.001
@@ -196,9 +195,21 @@ async function loadModels() {
 	const barracksModel = await loadModel(
 		"public/models/buildings/barracks/barracks_full.glb"
 	)
-	modelsDict.house = houseModel
-	modelsDict.townhall = townhallModel
-	modelsDict.barracks = barracksModel
+    const goldModel = await loadModel(
+		"public/models/buildings/nodes/gold/gold.glb"
+	)
+    const stoneModel = await loadModel(
+		"public/models/buildings/nodes/stone/stone.glb"
+	)
+    const wood = await loadModel(
+		"public/models/buildings/nodes/wood/wood.glb"
+	)
+	modelsDict.house = houseModel;
+	modelsDict.townhall = townhallModel;
+	modelsDict.barracks = barracksModel;
+    modelsDict.gold = goldModel;
+    modelsDict.stone = stoneModel;
+    modelsDict.wood = wood;
 
 	return modelsDict
 }
