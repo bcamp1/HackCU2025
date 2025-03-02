@@ -109,9 +109,9 @@ async function InitScene() {
 
 	function step() {
 		const playerData = gameState["players"][scene.playerId]
-		goldDisplay.innerText = playerData["gold"]
-		woodDisplay.innerText = playerData["wood"]
-		stoneDisplay.innerText = playerData["stone"]
+		goldDisplay.innerText = Math.round(playerData["gold"])
+		woodDisplay.innerText = Math.round(playerData["wood"])
+		stoneDisplay.innerText = Math.round(playerData["stone"])
 		populationDisplay.innerText =
 			Object.keys(playerData["fighters"]).length +
 			Object.keys(playerData["builders"]).length

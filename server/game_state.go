@@ -192,7 +192,7 @@ func (g Game) getNearestResource(position Float3) (*Resource, Float3) {
 	for _, resource := range g.resources {
 		resourcePosition := Float3{X: float64(resource.Position.X), Y: 0, Z: float64(resource.Position.Z)}
 		distance := resourcePosition.subtract(position).length()
-		if distance < minDistance {
+		if distance < minDistance && resource.AllResources() > 0 {
 			minDistance = distance
 			nearestResource = resource
 			nearestResourcePos = resourcePosition
@@ -208,6 +208,8 @@ func (g *Game) deleteEntity(id EntityID) {
 		delete(g.players[pid].fighters, id)
 		delete(g.players[pid].buildings, id)
 	}
+
+	delete(g.resources, id)
 }
 
 func (g *Game) updateBuilder(builder *Builder, player *Player, dt float64) {
@@ -273,8 +275,8 @@ func (g *Game) update(dt float64) bool {
 			if fighter.TargetEntityId != -1 {
 				fighter.huntDown(dt)
 			} else {
-				if( fighter.Position.subtract(fighter.GoalPosition).length() == 0 || fighter.Aggro) {
-					fighter.generalAttack(PlayerID(player.id),dt)
+				if fighter.Position.subtract(fighter.GoalPosition).length() == 0 || fighter.Aggro {
+					fighter.generalAttack(PlayerID(player.id), dt)
 				}
 			}
 		}
@@ -288,7 +290,7 @@ func (g *Game) update(dt float64) bool {
 }
 
 func (g *Game) getClosestEnemy(f *Fighter, playerId PlayerID) EntityID {
-	closest := EntityID(-1) 
+	closest := EntityID(-1)
 	var closestDistance float64
 	for _, player := range g.players {
 		if PlayerID(player.id) == playerId {
@@ -354,7 +356,7 @@ func (f *Fighter) huntDown(dt float64) {
 	}
 	if f.Position.subtract(target.GetPosition()).length() <= f.AreaOfAttack {
 		if f.TimeTillNextAttack <= 0 {
-			target.SetHealth(target.GetHealth() - f.Strength)	
+			target.SetHealth(target.GetHealth() - f.Strength)
 			f.TimeTillNextAttack = f.AttackDelay
 			fmt.Printf("Fighter %v attacked %v for %v damage\n", f.Id, target.GetHealth(), f.Strength)
 			if target.GetHealth() <= 0 {
@@ -370,14 +372,12 @@ func (f *Fighter) huntDown(dt float64) {
 
 func (f *Fighter) generalAttack(playerId PlayerID, dt float64) {
 	closestEnemy := game.getClosestEnemy(f, playerId)
-	if(closestEnemy  < 0) {
+	if closestEnemy < 0 {
 		return
 	}
 	f.TargetEntityId = closestEnemy
 	f.huntDown(dt)
 }
-
-
 
 func (g *Game) getMovable(id EntityID) Movable {
 	for _, player := range g.players {
@@ -413,6 +413,13 @@ func (g *Game) getDeceased() {
 				deceased = append(deceased, building.Id)
 				g.deleteEntity(building.Id)
 			}
+		}
+	}
+
+	for _, resource := range g.resources {
+		if resource.AllResources() <= 1 {
+			deceased = append(deceased, resource.Id)
+			g.deleteEntity(resource.Id)
 		}
 	}
 	g.deceased = deceased
