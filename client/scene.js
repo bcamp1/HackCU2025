@@ -267,6 +267,7 @@ export class Scene {
 
 		if (e.button == 2) {
 			for (const selection of this.selectedUnits) {
+				console.log(selection)
 				if (selection.entityId && selection.isMoveable) {
 					this.commandBuffer.push({
 						moveUnit: {
@@ -345,19 +346,17 @@ export class Scene {
 	updateSelectedAppearances() {
 		// Reset all
 		for (const selection of this.selectableObjects) {
-			if (!selection.isSelectable) {
-				continue
+			if (selection.unit && selection.unit.halo) {
+				selection.unit.halo.visible = false;
 			}
-
-			selection.material.color.set(selection.color)
-			selection.material.needsUpdate = true
 		}
 		// Update Selected
 		for (let i = 0; i < this.selectedUnits.length; i++) {
 			const object = this.selectedUnits[i]
-			if (!object.isSelectable) continue
-			object.material.color.set(object.color + 0x222222)
-			object.material.needsUpdate = true
+			
+			if (object.unit && object.unit.halo) {
+				object.unit.halo.visible = true;
+			}
 		}
 	}
 
@@ -387,10 +386,10 @@ export class Scene {
 		let unit
 		switch (type) {
 			case "knight":
-				unit = new Knight(id, pId)
+				unit = new Knight(id, pId, this)
 				break
 			case "builder":
-				unit = new Builder(id, pId)
+				unit = new Builder(id, pId, this)
 				break
 			default:
 				console.error(`Unknown unit type: ${type}`)
@@ -398,14 +397,21 @@ export class Scene {
 		}
 		if (unit && unit.mesh) {
 			unit.mesh.position.set(x, y, z)
-			unit.mesh.isSelectable = Number(pId) === Number(this.playerId)
-			unit.mesh.isMoveable = Number(pId) === Number(this.playerId)
-			unit.mesh.entityId = id
+			unit.mesh.scale.set(1.15, 1.15, 1.15);
+			
+			unit.mesh.traverse((child) => {
+				if (child.isMesh) {
+					//child.position.set(x, y, z)
+					child.isSelectable = Number(pId) === Number(this.playerId)
+					child.isMoveable = Number(pId) === Number(this.playerId)
+					child.entityId = id
+					this.selectableObjects.push(child)
+				}
+			});
+			
 			this.unitsMap[id] = unit
 			this.scene.add(unit.mesh)
-			if (unit.mesh.isMoveable) {
-				this.selectableObjects.push(unit.mesh)
-			}
+			
 		} else {
 			console.error(`Failed to create unit of type: ${type}`)
 		}

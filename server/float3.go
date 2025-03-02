@@ -3,12 +3,20 @@ package main
 import (
 	"encoding/json"
 	"math"
+	"math/rand"
 )
 
 type Float3 struct {
 	X float64 `json:"x"`
 	Y float64 `json:"y"`
 	Z float64 `json:"z"`
+}
+
+func getFloat3Noise(max float64) Float3 {
+	x := max * (rand.Float64()*2 - 1)
+	y := max * (rand.Float64()*2 - 1)
+	z := max * (rand.Float64()*2 - 1)
+	return Float3{x, y, z}
 }
 
 func float3FromGridLocation(loc GridLocation) Float3 {

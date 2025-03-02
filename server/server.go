@@ -169,9 +169,8 @@ func broadcastGameState() {
 	}
 }
 
-func main() {
-	http.HandleFunc("/ws", handleConnections)
-
+func initGame() {
+	log.Println("Initializing Game")
 	game = MakeTwoPlayerGame()
 
 	// game.createKnight(Float3{5, .25, 1}, 1)
@@ -193,6 +192,12 @@ func main() {
 	game.addGold(2, 2000)
 	game.addStone(2, 2000)
 	game.addWood(2, 20000)
+}
+
+func main() {
+	http.HandleFunc("/ws", handleConnections)
+
+	initGame()
 
 	go broadcastGameState()
 
