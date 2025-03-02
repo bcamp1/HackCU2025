@@ -169,8 +169,10 @@ export class Building {
 
         this.model.traverse((child) => {
             if (child.isMesh) {
+                child.castShadow = false;
+                child.receiveShadow = false;
                 child.material.color = unobstructedColor;
-                child.material.opacity = 0.3;
+                child.material.opacity = 0.2;
             }
         });
     }
@@ -181,6 +183,8 @@ export class Building {
 
         this.model.traverse((child) => {
             if (child.isMesh) {
+                child.castShadow = false;
+                child.receiveShadow = false;
                 child.material.color = obstructedColor;
                 child.material.opacity = 0.4;
             }

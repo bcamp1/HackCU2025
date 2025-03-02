@@ -69,6 +69,20 @@ async function InitScene() {
 		scene.keysPressed[event.key] = false
 	})
 
+
+    window.addEventListener("wheel", (event) => {
+        console.log(scene.zoom)
+        const minZoom = 0.5;
+        const maxZoom = 3.0;
+        const zoomSensitivity = 0.001; 
+        event.preventDefault(); 
+
+        // Adjust zoom based on the vertical scroll amount (deltaY)
+        scene.zoom += event.deltaY * zoomSensitivity;
+        scene.zoom = Math.min(maxZoom, Math.max(minZoom, scene.zoom));
+        scene.updateCamera();
+    }, { passive: false });
+
 	window.addEventListener("contextmenu", (event) => {
 		event.preventDefault()
 	})

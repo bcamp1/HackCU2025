@@ -14,6 +14,7 @@ export class Scene {
 		this.mouseX = 0
 		this.mouseY = 0
 		this.modelsDict = models;
+		this.zoom = 1;
 		const Orthographic = true;
 
 		this.fighters = {}
@@ -52,19 +53,102 @@ export class Scene {
 		this.container.appendChild(this.renderer.domElement)
 
 		// Ground plane
-		const groundPlaneSize = 100
-		const planeGeometry = new THREE.PlaneGeometry(
-			groundPlaneSize,
-			groundPlaneSize
-		)
-		const planeMaterial = new THREE.MeshLambertMaterial({
-			color: 0x2c7037,
-			shadowSide: THREE.DoubleSide,
-		})
-		this.groundPlane = new THREE.Mesh(planeGeometry, planeMaterial)
-		this.groundPlane.rotation.x = -Math.PI / 2
-		this.groundPlane.receiveShadow = true
-		this.scene.add(this.groundPlane)
+		const groundPlaneSize = 500
+		// const planeGeometry = new THREE.PlaneGeometry(
+		// 	groundPlaneSize,
+		// 	groundPlaneSize
+		// )
+		// const planeMaterial = new THREE.MeshLambertMaterial({
+		// 	color: 0x2c7037,
+		// 	shadowSide: THREE.DoubleSide,
+		// })
+		// this.groundPlane = new THREE.Mesh(planeGeometry, planeMaterial)
+		// this.groundPlane.rotation.x = -Math.PI / 2
+		// this.groundPlane.receiveShadow = true
+		// this.scene.add(this.groundPlane)
+
+
+		{
+			// Define the ground plane size and base color for your grass
+			const groundPlaneSize = 500;
+			var baseColor = { r: 8, g: 20, b: 9 }; // corresponds to 0x2c7037
+
+			// Set the desaturation factor (0 = no desaturation, 1 = fully grayscale)
+			const desaturationFactor = 0.2;
+			const darkenFactor = 1; // Multiply the grayscale value to darken it
+
+			// Create a low-resolution canvas to generate large, subtle noise
+			const noiseCanvas = document.createElement('canvas');
+			noiseCanvas.width = 64;  // Low resolution for large noise blocks
+			noiseCanvas.height = 64;
+			const noiseContext = noiseCanvas.getContext('2d');
+
+			// Create image data to fill with noise
+			const noiseImageData = noiseContext.createImageData(noiseCanvas.width, noiseCanvas.height);
+			const noiseData = noiseImageData.data;
+
+			// Loop through each pixel and add a slight random offset to the base color
+			for (let y = 0; y < noiseCanvas.height; y++) {
+				for (let x = 0; x < noiseCanvas.width; x++) {
+					const index = (y * noiseCanvas.width + x) * 4;
+					// Generate a noise value between -15 and 15 for subtle variation
+					const noiseVal = (Math.random() * 4) - 10;
+
+					// Apply the noise to each channel
+					let r = baseColor.r + noiseVal;
+					let g = baseColor.g + noiseVal;
+					let b = baseColor.b + noiseVal;
+
+					// Clamp the values to valid [0, 255] range
+					r = Math.min(255, Math.max(0, r));
+					g = Math.min(255, Math.max(0, g));
+					b = Math.min(255, Math.max(0, b));
+
+					// Compute the grayscale value using the luminosity method
+					const gray = r * 0.299 + g * 0.587 + b * 0.114;
+					const darkGray = gray * darkenFactor;
+					// Blend the original color with the grayscale based on the desaturation factor
+					r = r * (1 - desaturationFactor) + darkGray * desaturationFactor;
+					g = g * (1 - desaturationFactor) + darkGray * desaturationFactor;
+					b = b * (1 - desaturationFactor) + darkGray * desaturationFactor;
+
+					// Final clamp just in case
+					noiseData[index] = Math.min(255, Math.max(0, r));
+					noiseData[index + 1] = Math.min(255, Math.max(0, g));
+					noiseData[index + 2] = Math.min(255, Math.max(0, b));
+					noiseData[index + 3] = 255; // Fully opaque
+				}
+			}
+
+			// Draw the generated noise data onto the canvas
+			noiseContext.putImageData(noiseImageData, 0, 0);
+
+			// Create a texture from the canvas
+			const noiseTexture = new THREE.CanvasTexture(noiseCanvas);
+			// Set the texture to repeat so it covers the entire plane
+			noiseTexture.wrapS = THREE.RepeatWrapping;
+			noiseTexture.wrapT = THREE.RepeatWrapping;
+			noiseTexture.repeat.set(groundPlaneSize / noiseCanvas.width, groundPlaneSize / noiseCanvas.height);
+
+			// Optionally, use NearestFilter to keep the blocky noise effect
+			noiseTexture.minFilter = THREE.NearestFilter;
+			noiseTexture.magFilter = THREE.NearestFilter;
+
+			// Create your plane geometry and material using the noise texture
+			const planeGeometry = new THREE.PlaneGeometry(groundPlaneSize, groundPlaneSize);
+			const planeMaterial = new THREE.MeshLambertMaterial({
+				map: noiseTexture,
+				side: THREE.DoubleSide,
+			});
+
+			// Create the mesh, rotate it to lay flat, and add to the scene
+			this.groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+			this.groundPlane.rotation.x = -Math.PI / 2;
+			this.groundPlane.receiveShadow = true;
+			this.scene.add(this.groundPlane);
+		}
+
+
 		this.selectionBox = new SelectionBox(this.camera, this.scene)
 		this.helper = new SelectionHelper(this.renderer, "selectBox")
 		// Grid
@@ -103,7 +187,7 @@ export class Scene {
 			new THREE.DirectionalLight(0xffffff, 0.2),
 		]
 
-		const d = 100;
+		const d = 200;
 		lights[1].position.set(1*d, 1*d, -1*d)
 		lights[2].position.set(1*d, 1*d, 0)
 		lights[3].position.set(0, 1*d, 1*d)
@@ -111,8 +195,8 @@ export class Scene {
 		lights.forEach((light) => {
 			if (light.isDirectionalLight) {
 				light.castShadow = true
-				light.shadow.mapSize.width = 2048*2;
-				light.shadow.mapSize.height = 2048*2;
+				light.shadow.mapSize.width = 2048*3;
+				light.shadow.mapSize.height = 2048*3;
 
 				light.shadow.camera.left = -d;
 				light.shadow.camera.right = d;
@@ -343,36 +427,42 @@ export class Scene {
 	}
 
 	updateCamera() {
-		const speed = 0.1 // Adjust speed as needed
+		const speed = 0.2*this.zoom // Adjust speed as needed
+
+		const frustumSize = 20*this.zoom;
+		const aspect = window.innerWidth / window.innerHeight;
+		this.camera.left = -frustumSize * aspect / 2;
+		this.camera.right = frustumSize * aspect / 2;
+		this.camera.top = frustumSize / 2;
+		this.camera.bottom = -frustumSize / 2;
+		this.camera.updateProjectionMatrix();
 
 		// Move forward
-		if (this.keysPressed["ArrowUp"]) {
+		if (this.keysPressed["ArrowUp"] || this.keysPressed["w"] || this.keysPressed["W"]) {
 			this.camera.position.z -= speed*1.4;
 			this.camera.position.x -= speed*1.4;
 		}
 		// Move backward
-		if (this.keysPressed["ArrowDown"]) {
+		if (this.keysPressed["ArrowDown"] || this.keysPressed["s"] || this.keysPressed["S"]) {
 			this.camera.position.z += speed*1.4;
 			this.camera.position.x += speed*1.4;
 		}
 		// Move left
-		if (this.keysPressed["ArrowLeft"]) {
+		if (this.keysPressed["ArrowLeft"] || this.keysPressed["a"] || this.keysPressed["A"]) {
 			this.camera.position.x -= speed
 			this.camera.position.z += speed
 		}
 		// Move right
-		if (this.keysPressed["ArrowRight"]) {
+		if (this.keysPressed["ArrowRight"] || this.keysPressed["d"] || this.keysPressed["D"]) {
 			this.camera.position.x += speed
 			this.camera.position.z -= speed
 		}
-		// Move up
-		if (this.keysPressed["w"] || this.keysPressed["W"]) {
-			this.camera.position.y += speed
-		}
-		// Move down
-		if (this.keysPressed["s"] || this.keysPressed["S"]) {
-			this.camera.position.y -= speed
-		}
+
+		// Clamp the camera position to stay within 100 and 300 on the x and z axes
+		this.camera.position.x = Math.min(300, Math.max(100, this.camera.position.x));
+		this.camera.position.z = Math.min(300, Math.max(100, this.camera.position.z));
+		
+		//console.log(this.camera.position.x + " : " + this.camera.position.z)
 	}
 
 	animate() {
