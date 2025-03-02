@@ -17,9 +17,14 @@ export class Building {
 		this.pId = pId
 
 		// Construct mesh
-		if (this.type == "house" || 1) {
+		if (this.type == "house") {
 			this.model = this.modelsDict.house.clone()
-			this.model.position.copy(this.gridPosition)
+			this.offset = new THREE.Vector3(0, 0, 0)
+			this.model.position.set(
+				this.gridPosition.x + this.offset.x,
+				this.gridPosition.y + this.offset.y,
+				this.gridPosition.z + this.offset.z
+			)
 			scene.add(this.model)
 
 			this.materialsColors = []
@@ -28,6 +33,23 @@ export class Building {
 					child.material = child.material.clone()
 					child.receiveShadow = true
 					this.materialsColors.push(child.material.color)
+
+					if (child.userData.outline) {
+						// Remove the old outline from the clone (if it exists)
+						if (child.getObjectById(child.userData.outline.id)) {
+							child.remove(child.userData.outline)
+						}
+						// Create a new outline using the mesh's geometry
+						const edges = new THREE.EdgesGeometry(child.geometry)
+						const lineMaterial = new THREE.LineBasicMaterial({
+							color: 0x000000,
+							linewidth: 10,
+						})
+						const newOutline = new THREE.LineSegments(edges, lineMaterial)
+						// Store the new outline in userData for later reference
+						child.userData.outline = newOutline
+						child.add(newOutline)
+					}
 				}
 			})
 
@@ -35,30 +57,83 @@ export class Building {
 			this.height = 2
 			this.health = 100
 		} else if (this.type == "townhall") {
-			const tall = 1.4
-			const geometry = new THREE.BoxGeometry(2, tall, 2)
-			const material = new THREE.MeshLambertMaterial({
-				color: 0xdbcba9,
-				shadowSide: THREE.DoubleSide,
-			})
-			this.mesh = new THREE.Mesh(geometry, material)
-			this.offset = new THREE.Vector3(1, tall / 2, 1)
-			this.mesh.position.set(
-				x + this.offset.x,
-				y + this.offset.y,
-				z + this.offset.z
+			this.model = this.modelsDict.townhall.clone()
+			this.offset = new THREE.Vector3(1, 0, 1)
+			this.model.position.set(
+				this.gridPosition.x + this.offset.x,
+				this.gridPosition.y + this.offset.y,
+				this.gridPosition.z + this.offset.z
 			)
-			this.mesh.castShadow = true
-			const edges = new THREE.EdgesGeometry(this.mesh.geometry)
-			const lineMaterial = new THREE.LineBasicMaterial({
-				color: 0x000000,
-				linewidth: 2,
-			})
-			this.outline = new THREE.LineSegments(edges, lineMaterial)
-			this.mesh.add(this.outline)
+			scene.add(this.model)
 
-			this.width = 2
-			this.height = 2
+			this.materialsColors = []
+			this.model.traverse((child) => {
+				if (child.isMesh) {
+					child.material = child.material.clone()
+					child.receiveShadow = true
+					this.materialsColors.push(child.material.color)
+
+					if (child.userData.outline) {
+						// Remove the old outline from the clone (if it exists)
+						if (child.getObjectById(child.userData.outline.id)) {
+							child.remove(child.userData.outline)
+						}
+						// Create a new outline using the mesh's geometry
+						const edges = new THREE.EdgesGeometry(child.geometry)
+						const lineMaterial = new THREE.LineBasicMaterial({
+							color: 0x000000,
+							linewidth: 10,
+						})
+						const newOutline = new THREE.LineSegments(edges, lineMaterial)
+						// Store the new outline in userData for later reference
+						child.userData.outline = newOutline
+						child.add(newOutline)
+					}
+				}
+			})
+
+			this.width = 4
+			this.height = 4
+			this.health = 100
+		} else if (this.type == "barracks") {
+			this.model = this.modelsDict.barracks.clone()
+			this.offset = new THREE.Vector3(1, 0, 1)
+			this.model.position.set(
+				this.gridPosition.x + this.offset.x,
+				this.gridPosition.y + this.offset.y,
+				this.gridPosition.z + this.offset.z
+			)
+			this.model.rotation.z = Math.PI / 2
+			scene.add(this.model)
+
+			this.materialsColors = []
+			this.model.traverse((child) => {
+				if (child.isMesh) {
+					child.material = child.material.clone()
+					child.receiveShadow = true
+					this.materialsColors.push(child.material.color)
+
+					if (child.userData.outline) {
+						// Remove the old outline from the clone (if it exists)
+						if (child.getObjectById(child.userData.outline.id)) {
+							child.remove(child.userData.outline)
+						}
+						// Create a new outline using the mesh's geometry
+						const edges = new THREE.EdgesGeometry(child.geometry)
+						const lineMaterial = new THREE.LineBasicMaterial({
+							color: 0x000000,
+							linewidth: 10,
+						})
+						const newOutline = new THREE.LineSegments(edges, lineMaterial)
+						// Store the new outline in userData for later reference
+						child.userData.outline = newOutline
+						child.add(newOutline)
+					}
+				}
+			})
+
+			this.width = 4
+			this.height = 4
 			this.health = 100
 		}
 	}
@@ -68,7 +143,11 @@ export class Building {
 	moveTo(position) {
 		// this.mesh.position.set(position.x + this.offset.x, position.y + this.offset.y, position.z + this.offset.z);
 		this.gridPosition = position
-		this.model.position.copy(this.gridPosition)
+		this.model.position.set(
+			this.gridPosition.x + this.offset.x,
+			this.gridPosition.y + this.offset.y,
+			this.gridPosition.z + this.offset.z
+		)
 	}
 
 	changeHealth(amount) {
@@ -81,7 +160,6 @@ export class Building {
 	}
 
 	instantiateBuilding(scene) {
-		// scene.add(this.mesh);
 		scene.add(this.model)
 	}
 
@@ -99,7 +177,6 @@ export class Building {
 
 		this.model.traverse((child) => {
 			if (child.isMesh) {
-				child.material.transparent = true
 				child.material.color = unobstructedColor
 				child.material.opacity = 0.3
 			}
@@ -112,7 +189,6 @@ export class Building {
 
 		this.model.traverse((child) => {
 			if (child.isMesh) {
-				child.material.transparent = true
 				child.material.color = obstructedColor
 				child.material.opacity = 0.4
 			}
@@ -120,9 +196,14 @@ export class Building {
 	}
 
 	changeRenderOrder() {
-		// currentTEMP.setVisible(true);
-		// currentTEMP.mesh.material.transparent = true
-		// currentTEMP.outline.renderOrder = 999;
-		// currentTEMP.outline.material.depthTest = false;
+		this.model.traverse((child) => {
+			if (child.isMesh) {
+				child.material.transparent = true
+				if (child.userData.outline) {
+					child.userData.outline.renderOrder = 1000
+					child.userData.outline.material.depthTest = false
+				}
+			}
+		})
 	}
 }

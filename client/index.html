@@ -1,18 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>Poopoo (Peepee)</title>
-		<link rel="stylesheet" href="style.css">
-	</head>
-	<body>
-        <div id="threejs-container"></div>
 
-        <div id="ui">
-            <button id="addHouse">Add House</button>
-            <button id="addTownHall">Build Town Hall</button>
+<head>
+    <meta charset="utf-8">
+    <title>Poopoo (Peepee)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="threejs-container"></div>
+
+    <div id="ui-topbar">
+        <div id="info-container">
+            <div class="info-item"><h1>Game Title</h1></div>
+            <div class="info-item"></div>
+            <div class="info-item">Gold: 10000</div>
+            <div class="info-item">Stone: 10000</div>
+            <div class="info-item">Wood: 10000</div>
+            <div class="info-item">Population: 10000</div>
         </div>
+    </div>
 
-		<script type="module" src="/main.js"></script>
-	</body>
+    <div id="ui-bottombar">
+        <div id="build_menu">
+            <h1>Building Menu</h1>
+            <button id="addHouse" class="pushable"><span class="front">House</span></button>
+            <button id="addTownHall" class="pushable"><span class="front">Town Hall</span></button>
+            <button id="addBarracks" class="pushable"><span class="front">Barracks</span></button>
+        </div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+</body>
+
 </html>

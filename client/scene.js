@@ -102,6 +102,18 @@ export class Scene {
 		)
 		this.TEMP_townhall.setVisible(false)
 
+		this.TEMP_barracks = new Building(
+			"barracks",
+			0,
+			0,
+			0,
+			0,
+			0,
+			this.scene,
+			this.modelsDict
+		)
+		this.TEMP_barracks.setVisible(false)
+
 		// TODO: Scene Init
 
 		this.setupLights()
@@ -157,7 +169,6 @@ export class Scene {
 			this.mouseX,
 			this.mouseY
 		)
-		console.log(e.button)
 		if (e.button === 2) {
 			for (const selection of this.selectionBox.collection) {
 				if (!selection.isSelectable || !selection.isMoveable) {
@@ -429,6 +440,8 @@ export class Scene {
 					currentTEMP = this.TEMP_house
 				} else if (this.currentBuildingType == "townhall") {
 					currentTEMP = this.TEMP_townhall
+				} else if (this.currentBuildingType == "barracks") {
+					currentTEMP = this.TEMP_barracks
 				}
 
 				currentTEMP.setVisible(true)
@@ -450,6 +463,7 @@ export class Scene {
 		} else {
 			this.TEMP_house.setVisible(false)
 			this.TEMP_townhall.setVisible(false)
+			this.TEMP_barracks.setVisible(false)
 			this.canBuild = false
 		}
 		this.renderer.render(this.scene, this.camera)

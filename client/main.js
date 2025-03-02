@@ -30,6 +30,12 @@ async function InitScene() {
 		scene.isBuilding = true
 		scene.currentBuildingType = "townhall"
 	})
+    // ADD BARRACKS BUTTON
+    document.getElementById("addBarracks").addEventListener("click", () => {
+		scene.isBuilding = true
+		scene.currentBuildingType = "barracks"
+	})
+
 
 	// Handle resizing
 	// window.addEventListener("resize", () => {
@@ -140,7 +146,15 @@ async function loadModels() {
 	const houseModel = await loadModel(
 		"public/models/buildings/house/house_full.glb"
 	)
-	modelsDict.house = houseModel
+    const townhallModel = await loadModel(
+		"public/models/buildings/townhall/townhall_full.glb"
+	)
+    const barracksModel = await loadModel(
+		"public/models/buildings/barracks/barracks_full.glb"
+	)
+	modelsDict.house = houseModel;
+    modelsDict.townhall = townhallModel;
+    modelsDict.barracks = barracksModel;
 
 	return modelsDict
 }
@@ -163,8 +177,11 @@ async function loadModel(path) {
 							linewidth: 10,
 						})
 						const outline = new THREE.LineSegments(edges, lineMaterial)
+                        child.userData.outline = outline;
 						child.add(outline)
 						child.castShadow = true
+
+                        
 					}
 				})
 				console.log("Model loaded")
