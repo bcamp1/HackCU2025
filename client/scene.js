@@ -357,7 +357,7 @@ export class Scene {
 		for (let i = 0; i < this.selectedUnits.length; i++) {
 			const object = this.selectedUnits[i]
 			if (!object.isSelectable) continue
-			object.material.color.set(0xffffff - object.color)
+			object.material.color.set(object.color + 0x222222)
 			object.material.needsUpdate = true
 		}
 	}
