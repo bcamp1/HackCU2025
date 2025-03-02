@@ -10,6 +10,7 @@ async function InitScene() {
 	const scene = new Scene("threejs-container", models)
 	scene.startAnimationLoop()
 
+	// const socket = new WebSocket("ws://10.0.0.43:8080/ws")
 	const socket = new WebSocket("ws://localhost:8080/ws")
 
 	socket.addEventListener("open", function (event) {
@@ -117,9 +118,9 @@ async function InitScene() {
 			console.log("Game state", gameState)
 			scene.playerId = gameState["playerId"]
 			playerLabel.innerText = "Player " + scene.playerId
-			if (scene.playerId == '1') {
+			if (scene.playerId == "1") {
 				playerLabel.style = "color: blue"
-			} else if (scene.playerId == '2') {
+			} else if (scene.playerId == "2") {
 				playerLabel.style = "color: red"
 			} else {
 				playerLabel.style = "color: green"
@@ -256,9 +257,11 @@ async function InitScene() {
 		// cost := &Cost{Gold: 500, Stone: 400, Wood: 200}
 		// cost := &Cost{Gold: 100, Stone: 100, Wood: 50}
 
-		addHouseButton.disabled = (goldAmount < 100 || woodAmount < 50)
-		addTownHallButton.disabled = (goldAmount < 500 || stoneAmount < 400 || woodAmount < 200)
-		addBarracksButton.disabled = (goldAmount < 100 || stoneAmount < 100 || woodAmount < 50)
+		addHouseButton.disabled = goldAmount < 100 || woodAmount < 50
+		addTownHallButton.disabled =
+			goldAmount < 500 || stoneAmount < 400 || woodAmount < 200
+		addBarracksButton.disabled =
+			goldAmount < 100 || stoneAmount < 100 || woodAmount < 50
 	}
 }
 
@@ -309,15 +312,15 @@ async function loadModels() {
 	const worker_blue = await loadModelResource(
 		"public/models/characters/worker/worker_blue.glb"
 	)
-	modelsDict.house = [houseModel_blue, houseModel_red];
-	modelsDict.townhall = [townhallModel_blue, townhallModel_red];
-	modelsDict.barracks = [barracksModel_blue, barracksModel_red];
-    modelsDict.gold = goldModel;
-    modelsDict.stone = stoneModel;
-    modelsDict.wood = wood;
-    modelsDict.knight_attack = [knight_blue_attack, knight_red_attack];
-    modelsDict.knight_idle = [knight_blue_idle, knight_red_idle];
-    modelsDict.worker = [worker_blue, worker_red];
+	modelsDict.house = [houseModel_blue, houseModel_red]
+	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
+	modelsDict.barracks = [barracksModel_blue, barracksModel_red]
+	modelsDict.gold = goldModel
+	modelsDict.stone = stoneModel
+	modelsDict.wood = wood
+	modelsDict.knight_attack = [knight_blue_attack, knight_red_attack]
+	modelsDict.knight_idle = [knight_blue_idle, knight_red_idle]
+	modelsDict.worker = [worker_blue, worker_red]
 
 	return modelsDict
 }
