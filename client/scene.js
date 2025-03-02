@@ -173,8 +173,8 @@ export class Scene {
 		// Temporary Buildings
 		this.TEMP_house = new Building(
 			"house",
-			0,
-			0,
+			-1,
+			1,
 			0,
 			0,
 			0,
@@ -185,8 +185,8 @@ export class Scene {
 
 		this.TEMP_townhall = new Building(
 			"townhall",
-			0,
-			0,
+			-1,
+			1,
 			0,
 			0,
 			0,
@@ -197,8 +197,8 @@ export class Scene {
 
 		this.TEMP_barracks = new Building(
 			"barracks",
-			0,
-			0,
+			-1,
+			1,
 			0,
 			0,
 			0,

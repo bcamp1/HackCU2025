@@ -199,14 +199,23 @@ async function InitScene() {
 
 async function loadModels() {
 	var modelsDict = {}
-	const houseModel = await loadModel(
-		"public/models/buildings/house/house_full.glb"
+	const houseModel_red = await loadModel(
+		"public/models/buildings/house/house_red.glb"
 	)
-	const townhallModel = await loadModel(
-		"public/models/buildings/townhall/townhall_full.glb"
+	const houseModel_blue = await loadModel(
+		"public/models/buildings/house/house_blue.glb"
 	)
-	const barracksModel = await loadModel(
-		"public/models/buildings/barracks/barracks_full.glb"
+	const townhallModel_red = await loadModel(
+		"public/models/buildings/townhall/townhall_red.glb"
+	)
+	const townhallModel_blue = await loadModel(
+		"public/models/buildings/townhall/townhall_blue.glb"
+	)
+	const barracksModel_red = await loadModel(
+		"public/models/buildings/barracks/barracks_red.glb"
+	)
+	const barracksModel_blue = await loadModel(
+		"public/models/buildings/barracks/barracks_blue.glb"
 	)
 	const goldModel = await loadModelResource(
 		"public/models/buildings/nodes/gold/gold.glb"
@@ -217,9 +226,9 @@ async function loadModels() {
 	const wood = await loadModelResource(
 		"public/models/buildings/nodes/wood/wood.glb"
 	)
-	modelsDict.house = houseModel
-	modelsDict.townhall = townhallModel
-	modelsDict.barracks = barracksModel
+	modelsDict.house = [houseModel_blue, houseModel_red]
+	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
+	modelsDict.barracks = [barracksModel_blue, barracksModel_red]
 	modelsDict.gold = goldModel
 	modelsDict.stone = stoneModel
 	modelsDict.wood = wood
