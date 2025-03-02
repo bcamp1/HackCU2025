@@ -268,7 +268,7 @@ export class Scene {
 
 		if (e.button == 2) {
 			for (const selection of this.selectedUnits) {
-				if (selection.entityId) {
+				if (selection.entityId && selection.isMoveable) {
 					this.commandBuffer.push({
 						moveUnit: {
 							id: selection.entityId,
@@ -399,7 +399,7 @@ export class Scene {
 		}
 		if (unit && unit.mesh) {
 			unit.mesh.position.set(x, y, z)
-			unit.mesh.isSelectable = true
+			unit.mesh.isSelectable = Number(pId) === Number(this.playerId)
 			unit.mesh.isMoveable = Number(pId) === Number(this.playerId)
 			unit.mesh.entityId = id
 			this.unitsMap[id] = unit

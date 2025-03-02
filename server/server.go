@@ -166,9 +166,9 @@ func main() {
 	game.createKnight(Float3{5, .25, 3}, 1)
 
 	game.createKnight(Float3{5, .25, 4}, 1)
-	game.createKnight(Float3{-10, .25, 10}, 2)
+	game.createKnight(Float3{-9, .25, 10}, 2)
 	game.createKnight(Float3{-11, .25, 10}, 2)
-	game.createKnight(Float3{-12, .25, 10}, 2)
+	game.createKnight(Float3{-10, .25, 10}, 2)
 	game.createBuilder(Float3{0, .25, 0}, 1)
 	game.createBuilder(Float3{0, .25, 1}, 1)
 	game.createBuilder(Float3{0, .25, -1}, 1)
