@@ -54,6 +54,7 @@ async function InitScene() {
 	const woodDisplay = document.getElementById("wood")
 	const stoneDisplay = document.getElementById("stone")
 	const populationDisplay = document.getElementById("population")
+	const playerLabel = document.getElementById("player-label")
 
 	// Handle resizing
 	// window.addEventListener("resize", () => {
@@ -115,6 +116,14 @@ async function InitScene() {
 		} else {
 			console.log("Game state", gameState)
 			scene.playerId = gameState["playerId"]
+			playerLabel.innerText = "Player " + scene.playerId
+			if (scene.playerId == '1') {
+				playerLabel.style = "color: blue"
+			} else if (scene.playerId == '2') {
+				playerLabel.style = "color: red"
+			} else {
+				playerLabel.style = "color: green"
+			}
 		}
 	})
 
@@ -236,6 +245,20 @@ async function InitScene() {
 				}
 			})
 		})
+
+		var goldAmount = parseFloat(playerData["gold"])
+		var stoneAmount = parseFloat(playerData["stone"])
+		var woodAmount = parseFloat(playerData["wood"])
+
+		// Disable building buttons if not enough resources
+		// house, townhall, barracks
+		// cost := &Cost{Gold: 100, Stone: 0, Wood: 50}
+		// cost := &Cost{Gold: 500, Stone: 400, Wood: 200}
+		// cost := &Cost{Gold: 100, Stone: 100, Wood: 50}
+
+		addHouseButton.disabled = (goldAmount < 100 || woodAmount < 50)
+		addTownHallButton.disabled = (goldAmount < 500 || stoneAmount < 400 || woodAmount < 200)
+		addBarracksButton.disabled = (goldAmount < 100 || stoneAmount < 100 || woodAmount < 50)
 	}
 }
 
