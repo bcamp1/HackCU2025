@@ -1,19 +1,31 @@
 {
-  "hash": "31e5f243",
+  "hash": "ee559353",
   "configHash": "6a532221",
-  "lockfileHash": "e3b0c442",
-  "browserHash": "8ee18335",
+  "lockfileHash": "7582552f",
+  "browserHash": "24c6cc33",
   "optimized": {
     "three": {
       "src": "../../node_modules/three/build/three.module.js",
       "file": "three.js",
-      "fileHash": "865f3ed6",
+      "fileHash": "704a5ff6",
       "needsInterop": false
     },
     "three/addons/loaders/GLTFLoader.js": {
       "src": "../../node_modules/three/examples/jsm/loaders/GLTFLoader.js",
       "file": "three_addons_loaders_GLTFLoader__js.js",
-      "fileHash": "21753c25",
+      "fileHash": "b413dfd2",
+      "needsInterop": false
+    },
+    "three/addons/interactive/SelectionBox.js": {
+      "src": "../../node_modules/three/examples/jsm/interactive/SelectionBox.js",
+      "file": "three_addons_interactive_SelectionBox__js.js",
+      "fileHash": "e38186e0",
+      "needsInterop": false
+    },
+    "three/addons/interactive/SelectionHelper.js": {
+      "src": "../../node_modules/three/examples/jsm/interactive/SelectionHelper.js",
+      "file": "three_addons_interactive_SelectionHelper__js.js",
+      "fileHash": "ec771fab",
       "needsInterop": false
     }
   },
