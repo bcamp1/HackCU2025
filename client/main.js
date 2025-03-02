@@ -119,7 +119,11 @@ async function loadModels() {
 	const houseModel = await loadModel(
 		"public/models/buildings/house/house_full.glb"
 	)
-	modelsDict.house = houseModel
+    const townhallModel = await loadModel(
+		"public/models/buildings/townhall/townhall_full.glb"
+	)
+	modelsDict.house = houseModel;
+    modelsDict.townhall = townhallModel;
 
 	return modelsDict
 }
@@ -142,8 +146,11 @@ async function loadModel(path) {
 							linewidth: 10,
 						})
 						const outline = new THREE.LineSegments(edges, lineMaterial)
+                        child.userData.outline = outline;
 						child.add(outline)
 						child.castShadow = true
+
+                        
 					}
 				})
 				console.log("Model loaded")

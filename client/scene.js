@@ -136,7 +136,6 @@ export class Scene {
 			this.mouseX,
 			this.mouseY
 		)
-		console.log(e.button)
 		if (e.button === 2) {
 			for (const selection of this.selectionBox.collection) {
 				if (!selection.isSelectable || !selection.isMoveable) {
