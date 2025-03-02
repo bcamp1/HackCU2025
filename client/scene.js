@@ -13,8 +13,8 @@ export class Scene {
 		this.currentBuildingType = false
 		this.mouseX = 0
 		this.mouseY = 0
-		this.troops = {}
-
+		this.fighters = {}
+		this.commandBuffer = []
 		this.container = document.getElementById(containerId)
 		this.scene = new THREE.Scene()
 		this.scene.background = new THREE.Color(0x333344)
@@ -110,6 +110,31 @@ export class Scene {
 
 	onMouseDown(e) {
 		this.handleClick(e.button, this.mouseX, this.mouseY)
+		const clickLocation = this.getMouseCoordinatesOnGroundPlane(
+			this.mouseX,
+			this.mouseY
+		)
+		for (const selection of this.selectionBox.collection) {
+			if (!selection.isSelectable || !selection.isMoveable) {
+				continue
+			}
+			this.commandBuffer.push({
+				moveTroop: {
+					id: selection.entityId,
+					pos: {
+						x: clickLocation.x,
+						y: 0.5,
+						z: clickLocation.z,
+					},
+				},
+			})
+		}
+
+		console.log(this.commandBuffer)
+
+		for (const selection of this.selectionBox.collection) {
+			console.log(selection)
+		}
 		this.selectionBox.startPoint.set(this.mouseX, this.mouseY, 0.5)
 	}
 
@@ -148,7 +173,6 @@ export class Scene {
 			if (!allSelected[i].isSelectable) {
 				continue
 			}
-			allSelected[i].material.emissive.set(0xffffff)
 		}
 	}
 
@@ -185,13 +209,15 @@ export class Scene {
 		}
 		fighter.mesh.position.set(x, y, z)
 		fighter.mesh.isSelectable = true
-		this.troops[player][id] = fighter.id
+		fighter.mesh.isMoveable = true
+		fighter.mesh.entityId = id
+		this.fighters[player][id] = fighter
 		this.scene.add(fighter.mesh)
 	}
 
 	moveFighter(id, player, x, y, z) {
-		const troop = this.troops[player][id]
-		troop.position.set(x, y, z)
+		const fighter = this.fighters[player][id]
+		fighter.mesh.position.set(x, y, z)
 	}
 
 	startAnimationLoop() {

@@ -6,52 +6,52 @@ socket.addEventListener("open", function (event) {
 	console.log("Connected to WebSocket server")
 })
 
-var troops = []
-var commandBuffer = []
-
+var gameState = {}
 const scene = new Scene("threejs-container")
 
 socket.addEventListener("message", function (event) {
-	troops = JSON.parse(event.data)
+	gameState = JSON.parse(event.data)
 
-	if (commandBuffer.length > 0) {
-		console.log("Sending message buffer", commandBuffer)
-		socket.send(JSON.stringify(commandBuffer))
-		commandBuffer = []
+	if (scene.commandBuffer.length > 0) {
+		console.log("Sending message buffer", scene.commandBuffer)
+		socket.send(JSON.stringify(scene.commandBuffer))
+		scene.commandBuffer = []
 	} else {
 		socket.send(JSON.stringify([{ noop: true }]))
 	}
+	// console.log("Received game state", gameState)
 
 	step()
 	// You can handle the incoming message here
 })
 
 function step() {
-	Object.entries(troops).forEach((value, _) => {
-		const troop = value[1]
-		const id = value[0]
-		if (!Object.keys(scene.troops).includes(troop.player)) {
-			scene.troops[troop.player] = {}
-		}
-		if (scene.troops[troop.player][id] === undefined) {
-			scene.addFighter(
-				id,
-				troop.player,
-				"knight",
-				troop.pos.x,
-				troop.pos.y,
-				troop.pos.z
-			)
-		} else {
-			scene.addFighter(
-				id,
-				troop.player,
-				"knight",
-				troop.pos.x,
-				troop.pos.y,
-				troop.pos.z
-			)
-		}
+	Object.keys(gameState["players"]).forEach((pId, _) => {
+		const playerData = gameState["players"][pId]
+		Object.keys(playerData["fighters"]).forEach((key, _) => {
+			const fighter = playerData["fighters"][key]
+			if (!Object.keys(scene.fighters).includes(pId)) {
+				scene.fighters[pId] = {}
+			}
+			if (scene.fighters[pId][fighter.id] === undefined) {
+				scene.addFighter(
+					fighter.id,
+					pId,
+					fighter.type,
+					fighter.position.x,
+					fighter.position.y,
+					fighter.position.z
+				)
+			} else {
+				scene.moveFighter(
+					fighter.id,
+					pId,
+					fighter.position.x,
+					fighter.position.y,
+					fighter.position.z
+				)
+			}
+		})
 	})
 }
 
@@ -92,3 +92,5 @@ window.addEventListener("keyup", (event) => {
 window.addEventListener("contextmenu", (event) => {
 	event.preventDefault()
 })
+
+window.addEventListener("mousedown", (event) => {})

@@ -15,25 +15,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-var troops = map[int]struct {
-	POS Float3 `json:"pos"`
-	PLAYER string `json:"player"`
-}{
-	0: {POS: Float3 {X: 1, Y: 1, Z: 4}, PLAYER: "p1"},
-	1: {POS: Float3 {X: 2, Y: 1, Z: 3},  PLAYER: "p1"},
-	2: {POS: Float3 {X: 3, Y: 1, Z: 2},  PLAYER: "p1"},
-	3: {POS: Float3 {X: 4, Y: 1, Z: 1},  PLAYER: "p1"},
-}
+var game Game
 
-var currentID int = 1
-
-
-
-type Float3 struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
-	Z float64 `json:"z"`
-}
 
 func mapToFloat3(m map[string]any) Float3 {
 	return Float3{
@@ -58,28 +41,17 @@ type AttackCommand struct {
 	ATTACKER_ID int `json:"attacker_id"`
 }
 
-func moveTroop(command MoveTroopCommand) {
-	troop := troops[command.ID]
-	troop.POS = command.POS
-	troops[command.ID] = troop
-}	
-
 
 var commands = map[string]func(map[string]any){
 	"moveTroop": func(command map[string]any){
-		id, idOk := command["id"].(float64)
-		pos, posOk := command["pos"].(map[string]any)
-		if idOk && posOk {
-			moveTroop(MoveTroopCommand{
-				ID: int(id),
-				POS: Float3{
-					X: pos["x"].(float64),
-					Y: pos["y"].(float64),
-					Z: pos["z"].(float64),
-				},
-			})
-		} else {
-			log.Printf("Invalid moveTroop command: %v", command)
+		pos := mapToFloat3(command["pos"].(map[string]any))			
+		
+		id := EntityID(int(command["id"].(float64)))
+		log.Printf("ID: %v", id)		
+		fighter := game.getFighterPointer(id)
+		if fighter != nil {
+			fighter.SetGoalPosition(pos)
+			log.Printf("Move troop command")
 		}
 	},
 	"placeBuilding": func(command map[string]any){
@@ -92,24 +64,29 @@ var commands = map[string]func(map[string]any){
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
+	lastGameTime := game.elapsedTime
 	if err != nil {
 		log.Fatalf("Failed to upgrade to websocket: %v", err)
 	}
 	defer ws.Close()
 
 	for {
-		time.Sleep(50 * time.Millisecond)
-		// for i := range troops {
-		// 	tempTroop := troops[i]
-		// 	tempTroop.POS.X = math.Sin(float64(time.Now().UnixNano()) * 0.000000001)
-		// 	troops[i] = tempTroop
-		// }
-		circleJSON, err := json.Marshal(troops)
+		if lastGameTime == game.elapsedTime {
+			continue
+		}
 		if err != nil {
 			log.Printf("Error marshalling JSON: %v", err)
 			break
 		}
-		err = ws.WriteMessage(websocket.TextMessage, circleJSON)
+
+		gameState := game.GetState()
+
+		gameStateEncoded, err := json.Marshal(gameState)
+		if(err != nil){
+			log.Printf("Error marshalling JSON: %v", err)
+			break
+		}
+		err = ws.WriteMessage(websocket.TextMessage, gameStateEncoded)
 		if err != nil {
 			log.Printf("Error writing message: %v", err)
 			break
@@ -121,23 +98,40 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error reading message: %v", err)
 		}else{
 			if(msgTemp[0]["noop"] != true){
-				for key := range msgTemp[0] {
-					log.Printf("Key: %v", key)
-					log.Printf("Value: %v", msgTemp[0][key])
-					if cmd, ok := msgTemp[0][key].(map[string]any); ok {
-						commands[key](cmd)
-					} else {
-						log.Printf("Invalid command format: %v", msgTemp[0][key])
+				log.Printf("Received message: %v", msgTemp)
+				for i := range msgTemp {
+					for key := range msgTemp[i] {
+						log.Printf("Key: %v", key)
+						log.Printf("Value: %v", msgTemp[i][key])
+						if cmd, ok := msgTemp[i][key].(map[string]any); ok {
+							commands[key](cmd)
+						} else {
+							log.Printf("Invalid command format: %v", msgTemp[i][key])
+						}
 					}
-					log.Printf("Troops: %v", troops)
+
 				}
 			}
 		}
 	}
 }
 
+func runGameLoop() {
+	for {
+		time.Sleep(10 * time.Millisecond)
+		game.update(0.05);
+	}
+}
+
 func main() {
 	http.HandleFunc("/ws", handleConnections)
+
+	game = MakeTwoPlayerGame()
+	game.createKnight(Float3{1, .5, 1}, 1)
+	game.createKnight(Float3{2, .5, 1}, 1)
+	game.createKnight(Float3{4, .5, 0}, 1)
+	game.createKnight(Float3{1, .5, -1}, 1)
+	go runGameLoop()
 
 	log.Println("Server started on :8080")
 	err := http.ListenAndServe(":8080", nil)

@@ -40,6 +40,56 @@ type Game struct {
 	entityIDs   map[EntityID]struct{}
 }
 
+type GameState struct {
+	ElapsedTime float64 `json:"elapsedTime"`
+	Players     map[PlayerID]PlayerState `json:"players"`
+}
+
+type PlayerState struct {
+	Id        int `json:"id"`
+	Gold      float64 `json:"gold"`
+	Stone     float64 `json:"stone"`
+	Wood      float64 `json:"wood"`
+	Fighters  map[EntityID]Fighter `json:"fighters"`
+	Builders  map[EntityID]Builder `json:"builders"`
+	Buildings map[EntityID]Building `json:"buildings"`
+}
+
+func (g *Game) GetState() GameState {
+	state := GameState {}
+	state.ElapsedTime = g.elapsedTime
+	state.Players = make(map[PlayerID]PlayerState)
+
+	for pid, player := range g.players {
+		fighters := make(map[EntityID]Fighter)
+		builders := make(map[EntityID]Builder)
+		buildings := make(map[EntityID]Building)
+		for fid, fighter := range player.fighters {
+			fighters[fid] = *fighter
+		}
+		for bid, builder := range player.builders {
+			builders[bid] = *builder
+		}
+		for bid, building := range player.buildings {
+			buildings[bid] = *building
+		}
+
+		state.Players[pid] = PlayerState{
+			Id:        player.id,
+			Gold:      player.gold,
+			Stone:     player.stone,
+			Wood:      player.wood,
+			Fighters: fighters,
+			Builders: builders,
+			Buildings: buildings,
+		}
+	}
+	return state
+}
+
+		
+
+
 func MakeTwoPlayerGame() Game {
 	player1 := MakePlayer(1)
 	player2 := MakePlayer(2)
@@ -73,7 +123,7 @@ func (g *Game) deleteEntity(id EntityID) {
 	}
 }
 
-func (g *Game) update(dt float64) {
+func (g *Game) update(dt float64) bool {
 	g.elapsedTime += dt
 	for _, player := range g.players {
 		for _, fighter := range player.fighters {
@@ -83,6 +133,17 @@ func (g *Game) update(dt float64) {
 			updateMovable(builder, dt)
 		}
 	}
+	return true
+}
+
+func (g *Game) getFighterPointer(id EntityID) *Fighter {
+		for _, player := range g.players {
+			fighter, exists := player.fighters[id]
+			if exists {
+				return fighter
+			}
+		}
+	return nil
 }
 
 // func main() {
