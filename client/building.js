@@ -175,25 +175,29 @@ export class Building {
 		this.changeRenderOrder()
 		const unobstructedColor = new THREE.Color().setHex(0x00ff00)
 
-		this.model.traverse((child) => {
-			if (child.isMesh) {
-				child.material.color = unobstructedColor
-				child.material.opacity = 0.3
-			}
-		})
-	}
+        this.model.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = false;
+                child.receiveShadow = false;
+                child.material.color = unobstructedColor;
+                child.material.opacity = 0.2;
+            }
+        });
+    }
 
 	setAppearance_CantBuild() {
 		this.changeRenderOrder()
 		const obstructedColor = new THREE.Color().setHex(0xff0000)
 
-		this.model.traverse((child) => {
-			if (child.isMesh) {
-				child.material.color = obstructedColor
-				child.material.opacity = 0.4
-			}
-		})
-	}
+        this.model.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = false;
+                child.receiveShadow = false;
+                child.material.color = obstructedColor;
+                child.material.opacity = 0.4;
+            }
+        });
+    }
 
 	changeRenderOrder() {
 		this.model.traverse((child) => {
