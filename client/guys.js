@@ -1,7 +1,5 @@
 import * as THREE from "three"
 
-// todo: change color based on player
-
 const p1BuilderColor = 0x307c91
 const p2BuilderColor = 0xb83232
 const p1KnightColor = 0x2c3e91
