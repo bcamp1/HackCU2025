@@ -228,7 +228,6 @@ async function loadModels() {
 	const wood = await loadModelResource(
 		"public/models/buildings/nodes/wood/wood.glb"
 	)
-<<<<<<< HEAD
     const knight_red_idle = await loadModelResource(
 		"public/models/characters/knight_red/knight_red_idle.glb"
 	)
@@ -256,14 +255,6 @@ async function loadModels() {
     modelsDict.knight_attack = [knight_blue_attack, knight_red_attack];
     modelsDict.knight_idle = [knight_blue_idle, knight_red_idle];
     modelsDict.worker = [worker_blue, worker_red];
-=======
-	modelsDict.house = [houseModel_blue, houseModel_red]
-	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
-	modelsDict.barracks = [barracksModel_blue, barracksModel_red]
-	modelsDict.gold = goldModel
-	modelsDict.stone = stoneModel
-	modelsDict.wood = wood
->>>>>>> 3bbaf5d4eb151e56fa4913f111312d3235e6a049
 
 	return modelsDict
 }
