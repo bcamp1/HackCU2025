@@ -176,14 +176,14 @@ func (g *Game) update(dt float64) bool {
 	for _, player := range g.players {
 		for _, fighter := range player.fighters {
 			updateMovable(fighter, dt)
-			if fighter.TargetEntityId != -1 {
-				fighter.huntDown(dt)
-			} else {
-				if( fighter.Position.subtract(fighter.GoalPosition).length() == 0 || fighter.Aggro) {
-					// fmt.Printf("Player %v fighter %v is attacking\n", player.id, fighter.Id)
-					fighter.generalAttack(dt)
-				}
-			}
+			// if fighter.TargetEntityId != -1 {
+			// 	fighter.huntDown(dt)
+			// } else {
+			// 	if( fighter.Position.subtract(fighter.GoalPosition).length() == 0 || fighter.Aggro) {
+			// 		// fmt.Printf("Player %v fighter %v is attacking\n", player.id, fighter.Id)
+			// 		fighter.generalAttack(dt)
+			// 	}
+			// }
 		}
 		for _, builder := range player.builders {
 			updateMovable(builder, dt)
