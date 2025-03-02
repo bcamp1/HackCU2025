@@ -304,7 +304,8 @@ export class Scene {
 					// Left click
 					const buildingCoordinates = this.getGridCoordinates(clickLocation)
 					this.commandBuffer.push({
-						placeHouse: {
+						placeBuilding: {
+							type: this.currentBuildingType,
 							pos: {
 								x: buildingCoordinates.x,
 								z: buildingCoordinates.z,

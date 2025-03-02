@@ -35,40 +35,7 @@ type AttackCommand struct {
 	ATTACKER_ID int `json:"attacker_id"`
 }
 
-var commands = map[string]func(map[string]any, PlayerID){
-	"moveUnit": func(command map[string]any, playerID PlayerID) {
-		pos := mapToFloat3(command["pos"].(map[string]any))
-		id := EntityID(int(command["id"].(float64)))
-		unit := game.getMovable(id)
-		if unit != nil {
-			unit.SetGoalPosition(pos)
-		}
-	},
-
-	"placeHouse": func(command map[string]any, playerID PlayerID) {
-		pos := mapToGridLocation(command["pos"].(map[string]any))
-		game.createHouse(pos, playerID)
-	},
-
-	"createKnight": func(command map[string]any, playerID PlayerID) {
-		pos := mapToFloat3(command["pos"].(map[string]any))
-		game.createKnight(pos, playerID)
-	},
-
-	"createBuilder": func(command map[string]any, playerID PlayerID) {
-		pos := mapToFloat3(command["pos"].(map[string]any))
-		game.createBuilder(pos, playerID)
-	},
-
-	"placeTownHall": func(command map[string]any, playerID PlayerID) {
-		pos := mapToGridLocation(command["pos"].(map[string]any))
-		game.createTownHall(pos, playerID)
-	},
-
-	"attack": func(command map[string]any, playerID PlayerID) {
-		log.Printf("Attack command")
-	},
-}
+	
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -114,8 +81,47 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			if msgTemp[0]["noop"] != true {
 				for i := range msgTemp {
 					for key := range msgTemp[i] {
-						if cmd, ok := msgTemp[i][key].(map[string]any); ok {
-							commands[key](cmd, playerID)
+						if command, ok := msgTemp[i][key].(map[string]any); ok {
+							log.Printf("Command: %v", command)
+							log.Printf("key: %v", key)
+
+							switch key {
+								case "moveUnit":
+									pos := mapToFloat3(command["pos"].(map[string]any))
+									id := EntityID(int(command["id"].(float64)))
+									unit := game.getMovable(id)
+									if unit != nil {
+										unit.SetGoalPosition(pos)
+									}
+
+								case "placeBuilding":
+									pos := mapToGridLocation(command["pos"].(map[string]any))
+									switch command["type"].(string) {
+										case "house":
+											game.createHouse(pos, playerID)
+										case "townhall":
+											game.createTownHall(pos, playerID)
+										case "barracks":
+											game.createBarracks(pos, playerID)
+										default:
+											log.Printf("Invalid building type: %v", command["buildingType"])
+									}
+
+								case "createKnight":
+									pos := mapToFloat3(command["pos"].(map[string]any))
+									game.createKnight(pos, playerID)
+
+								case "createBuilder":
+									pos := mapToFloat3(command["pos"].(map[string]any))
+									game.createBuilder(pos, playerID)
+
+
+								case "attack":
+									log.Printf("Attack command")
+
+								default:
+									log.Printf("Invalid command type: %v", key)
+							}
 						} else {
 							log.Printf("Invalid command format: %v", msgTemp[i][key])
 						}
@@ -161,6 +167,9 @@ func main() {
 	game.createBuilder(Float3{0, .25, 0}, 1)
 	game.createBuilder(Float3{0, .25, 1}, 1)
 	game.createBuilder(Float3{0, .25, -1}, 1)
+	game.addGold(1, 100)
+	game.addStone(1, 100)
+	game.addWood(1, 100)
 	go broadcastGameState()
 
 	log.Println("Server started on :8080")

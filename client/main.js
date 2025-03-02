@@ -21,21 +21,28 @@ async function InitScene() {
 	})
 	// UI interaction: Rotate the cube when the button is clicked
 	// ADD HOUSE BUTTON
-	document.getElementById("addHouse").addEventListener("click", () => {
+	// ADD HOUSE BUTTON
+	const addHouseButton = document.getElementById("addHouse")
+	addHouseButton.addEventListener("click", () => {
 		scene.isBuilding = true
 		scene.currentBuildingType = "house"
 	})
 	// ADD TOWN HALL BUTTON
-	document.getElementById("addTownHall").addEventListener("click", () => {
+	const addTownHallButton = document.getElementById("addTownHall")
+	addTownHallButton.addEventListener("click", () => {
 		scene.isBuilding = true
 		scene.currentBuildingType = "townhall"
 	})
-    // ADD BARRACKS BUTTON
-    document.getElementById("addBarracks").addEventListener("click", () => {
+	// ADD BARRACKS BUTTON
+	const addBarracksButton = document.getElementById("addBarracks")
+	addBarracksButton.addEventListener("click", () => {
 		scene.isBuilding = true
 		scene.currentBuildingType = "barracks"
 	})
-
+	const goldDisplay = document.getElementById("gold")
+	const woodDisplay = document.getElementById("wood")
+	const stoneDisplay = document.getElementById("stone")
+	const populationDisplay = document.getElementById("population")
 
 	// Handle resizing
 	// window.addEventListener("resize", () => {
@@ -80,6 +87,15 @@ async function InitScene() {
 	})
 
 	function step() {
+		const playerData = gameState["players"][scene.playerId]
+		goldDisplay.innerText = playerData["gold"]
+		woodDisplay.innerText = playerData["wood"]
+		stoneDisplay.innerText = playerData["stone"]
+		populationDisplay.innerText =
+			Object.keys(playerData["fighters"]).length +
+			Object.keys(playerData["builders"]).length
+
+		// update the scene
 		Object.keys(gameState["players"]).forEach((pId, _) => {
 			const playerData = gameState["players"][pId]
 			Object.keys(playerData["fighters"]).forEach((key, _) => {
@@ -146,15 +162,15 @@ async function loadModels() {
 	const houseModel = await loadModel(
 		"public/models/buildings/house/house_full.glb"
 	)
-    const townhallModel = await loadModel(
+	const townhallModel = await loadModel(
 		"public/models/buildings/townhall/townhall_full.glb"
 	)
-    const barracksModel = await loadModel(
+	const barracksModel = await loadModel(
 		"public/models/buildings/barracks/barracks_full.glb"
 	)
-	modelsDict.house = houseModel;
-    modelsDict.townhall = townhallModel;
-    modelsDict.barracks = barracksModel;
+	modelsDict.house = houseModel
+	modelsDict.townhall = townhallModel
+	modelsDict.barracks = barracksModel
 
 	return modelsDict
 }
@@ -177,11 +193,9 @@ async function loadModel(path) {
 							linewidth: 10,
 						})
 						const outline = new THREE.LineSegments(edges, lineMaterial)
-                        child.userData.outline = outline;
+						child.userData.outline = outline
 						child.add(outline)
 						child.castShadow = true
-
-                        
 					}
 				})
 				console.log("Model loaded")

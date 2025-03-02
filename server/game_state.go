@@ -158,6 +158,16 @@ func (g *Game) getMovable(id EntityID) Movable {
 	return nil
 }
 
+func (g *Game) addGold(player PlayerID, amount float64) {
+	g.players[player].gold += amount
+}
+func (g *Game) addStone(player PlayerID, amount float64) {
+	g.players[player].stone += amount
+}
+func (g *Game) addWood(player PlayerID, amount float64) {
+	g.players[player].wood += amount
+}
+
 // func main() {
 // 	game := MakeTwoPlayerGame()
 // 	knight := game.createKnight(Float3{100, 20, 0}, 1)
