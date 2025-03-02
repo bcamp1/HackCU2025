@@ -161,6 +161,8 @@ export class Scene {
 
 		this.selectionBox = new SelectionBox(this.camera, this.scene)
 		this.helper = new SelectionHelper(this.renderer, "selectBox")
+		this.selectedUnits = []
+		this.selectableObjects = []
 		// Grid
 		const totalSize = groundPlaneSize
 		const cellSize = 1
@@ -256,79 +258,104 @@ export class Scene {
 
 	onMouseDown(e) {
 		this.handleClick(e.button, this.mouseX, this.mouseY)
+		const mX = (e.clientX / window.innerWidth) * 2 - 1
+		const mY = -(e.clientY / window.innerHeight) * 2 + 1
 		const clickLocation = this.getMouseCoordinatesOnGroundPlane(
 			this.mouseX,
 			this.mouseY
 		)
-		if (e.button === 2) {
-			for (const selection of this.selectionBox.collection) {
-				if (!selection.isSelectable || !selection.isMoveable) {
+
+		if (e.button == 2) {
+			console.log(this.selectableObjects)
+			for (const selection of this.selectedUnits) {
+				if (selection.entityId) {
+					this.commandBuffer.push({
+						moveUnit: {
+							id: selection.entityId,
+							pos: {
+								x: clickLocation.x + Math.random() * 2 - 1,
+								y: 0.5,
+								z: clickLocation.z + Math.random() * 2 - 1,
+							},
+						},
+					})
+				}
+			}
+		} else if (e.button == 0) {
+			this.selectedUnits = []
+
+			this.selectionBox.startPoint.set(mX, mY)
+			this.helper.startPoint.set(e.clientX, e.clientY)
+		}
+	}
+
+	onMouseMove(e) {
+		const mX = (e.clientX / window.innerWidth) * 2 - 1
+		const mY = -(e.clientY / window.innerHeight) * 2 + 1
+		if (this.helper.isDown && e.button == 0) {
+			this.selectionBox.endPoint.set(mX, mY)
+			this.helper.onSelectMove(e)
+			// this.selectedUnits = this.selectionBox.select()
+			// this.updateSelectedAppearances();
+		}
+	}
+
+	onMouseUp(e) {
+		const DRAG_THRESHOLD = 0.02
+		const mX = (e.clientX / window.innerWidth) * 2 - 1
+		const mY = -(e.clientY / window.innerHeight) * 2 + 1
+
+		if (e.button == 0) {
+			this.selectionBox.endPoint.set(mX, mY)
+
+			const dx = mX - this.selectionBox.startPoint.x
+			const dy = mY - this.selectionBox.startPoint.y
+			const distance = Math.sqrt(dx * dx + dy * dy)
+			console.log(distance)
+			this.helper.onSelectOver()
+			this.helper.isDown = false
+
+			if (distance < DRAG_THRESHOLD) {
+				// Optionally, you can do a raycast here for single object selection.
+				// For now, simply clear the selection.
+				this.selectedUnits = []
+				this.updateSelectedAppearances()
+				console.log("Click detected: no drag selection")
+			} else {
+				// Finalize the selection rectangle.
+				this.selectionBox.collection = this.selectableObjects
+
+				this.selectedUnits = this.selectionBox.select()
+
+				this.helper.onSelectOver()
+				this.helper.isDown = false
+				this.updateSelectedAppearances()
+			}
+
+			for (let i = 0; i < this.selectedUnits.length; i++) {
+				if (!this.selectedUnits[i].isSelectable) {
 					continue
 				}
-				this.commandBuffer.push({
-					moveUnit: {
-						id: selection.entityId,
-						pos: {
-							x: clickLocation.x + Math.random() * 2 - 1,
-							y: 0.5,
-							z: clickLocation.z + Math.random() * 2 - 1,
-						},
-					},
-				})
 			}
 		}
-		for (const selection of this.selectionBox.collection) {
+	}
+
+	updateSelectedAppearances() {
+		// Reset all
+		for (const selection of this.selectableObjects) {
 			if (!selection.isSelectable) {
 				continue
 			}
 
-			selection.children[0].material.color.set(0x000000)
+			selection.material.color.set(0x000000)
+			selection.material.needsUpdate = true
 		}
-
-		this.selectionBox.startPoint.set(e.clientX, e.clientY, 0.5)
-		this.helper.startPoint.set(e.clientX, e.clientY)
-	}
-
-	onMouseMove(e) {
-		if (this.helper.isDown) {
-			for (let i = 0; i < this.selectionBox.collection.length; i++) {
-				if (!this.selectionBox.collection[i].isSelectable) {
-					continue
-				}
-			}
-
-			// this.selectionBox.endPoint.set(
-			// 	(e.clientX / window.innerWidth) * 2 - 1,
-			// 	-(e.clientY / window.innerHeight) * 2 + 1,
-			// 	0.5
-			// )
-			this.selectionBox.endPoint.set(e.clientX, e.clientY, 0.5)
-
-			this.helper.onSelectMove(e)
-
-			const allSelected = this.selectionBox.select()
-
-			for (let i = 0; i < allSelected.length; i++) {
-				if (!allSelected[i].isSelectable) {
-					continue
-				}
-				console.log(allSelected[i])
-				this.selectionBox.collection[i].children[0].material.color.set(0xff0000)
-			}
-		}
-	}
-
-	onMouseUp(event) {
-		this.selectionBox.endPoint.set(event.clientX, event.clientY, 0.5)
-
-		this.helper.onSelectOver()
-
-		const allSelected = this.selectionBox.select()
-
-		for (let i = 0; i < allSelected.length; i++) {
-			if (!allSelected[i].isSelectable) {
-				continue
-			}
+		// Update Selected
+		for (let i = 0; i < this.selectedUnits.length; i++) {
+			const object = this.selectedUnits[i]
+			if (!object.isSelectable) continue
+			object.material.color.set(0xff0000)
+			object.material.needsUpdate = true
 		}
 	}
 
@@ -338,10 +365,11 @@ export class Scene {
 
 	addCube(x, y, z, l) {
 		const geometry = new THREE.BoxGeometry(l, l, l)
-		const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+		const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 })
 		const cube = new THREE.Mesh(geometry, material)
 		cube.position.set(x, y, z)
 		cube.castShadow = true
+		cube.receiveShadow = true
 		const edges = new THREE.EdgesGeometry(cube.geometry)
 		const lineMaterial = new THREE.LineBasicMaterial({
 			color: 0x000000,
@@ -373,6 +401,7 @@ export class Scene {
 			unit.mesh.entityId = id
 			this.unitsMap[id] = unit
 			this.scene.add(unit.mesh)
+			this.selectableObjects.push(unit.mesh)
 		} else {
 			console.error(`Failed to create unit of type: ${type}`)
 		}
@@ -555,6 +584,7 @@ export class Scene {
 			300,
 			Math.max(100, this.camera.position.z)
 		)
+		this.camera.updateProjectionMatrix()
 
 		//console.log(this.camera.position.x + " : " + this.camera.position.z)
 	}
