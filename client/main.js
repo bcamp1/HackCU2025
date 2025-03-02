@@ -10,7 +10,7 @@ async function InitScene() {
 	const scene = new Scene("threejs-container", models)
 	scene.startAnimationLoop()
 
-	const socket = new WebSocket("ws://server-blue-dust-1345.fly.dev/:8080/ws")
+	const socket = new WebSocket("ws://localhost:8080/ws")
 
 	socket.addEventListener("open", function (event) {
 		console.log("Connected to server", event.data)
