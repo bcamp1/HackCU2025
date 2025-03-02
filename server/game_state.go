@@ -141,10 +141,11 @@ func (g *Game) update(dt float64) bool {
 			updateMovable(fighter, dt)
 			if fighter.TargetEntityId != -1 {
 				fighter.huntDown(dt)
+			} else {
+				if( fighter.Position.subtract(fighter.GoalPosition).length() == 0 || fighter.Aggro) {
+					fighter.generalAttack(dt)
+				}
 			}
-			// } else {
-			// 	fighter.generalAttack()
-			// }
 		}
 		for _, builder := range player.builders {
 			updateMovable(builder, dt)
@@ -174,7 +175,7 @@ func (g *Game) getDeceased() {
 		for _, fighter := range player.fighters {
 			if fighter.Health <= 0 {
 				deceased = append(deceased, fighter.Id)
-				delete(player.fighters, fighter.Id)
+				g.deleteEntity(fighter.Id)
 			}
 		}
 	}

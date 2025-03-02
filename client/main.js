@@ -58,6 +58,11 @@ async function InitScene() {
 
 	window.addEventListener("keydown", (event) => {
 		scene.keysPressed[event.key] = true
+		if (event.key === "1") {
+			scene.moveType = 1
+		} else if (event.key === "2") {
+			scene.moveType = 0
+		}
 	})
 
 	window.addEventListener("keyup", (event) => {

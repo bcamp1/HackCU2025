@@ -1,7 +1,5 @@
 package main
 
-import "log"
-
 type Movable interface {
 	GetGoalPosition() Float3
 	SetGoalPosition(Float3)
@@ -35,17 +33,19 @@ func updateMovable(m Movable, dt float64) {
 	}
 }
 
+const aggroRadius float64 = 10
 type Fighter struct {
 	Id           EntityID `json:"id"`
 	UnitType  string  `json:"unitType"`
 	Position     Float3 `json:"position"`
 	GoalPosition Float3 `json:"goalPosition"`
 	TargetEntityId        EntityID `json:"targetEntityId"`
+	Aggro        bool `json:"aggro"`
 	Strength     float64 `json:"strength"`
 	Speed        float64 `json:"speed"`
 	TimeTillNextAttack float64 `json:"timeTillNextAttack"`
 	AreaOfAttack float64 `json:"areaOfAttack"`
-	AttackSpeed  float64 `json:"attackSpeed"`
+	AttackDelay  float64 `json:"attackSpeed"`
 	MaxHealth    float64 `json:"maxHealth"`
 	Health       float64 `json:"health"`
 }
@@ -60,7 +60,8 @@ func (g *Game) createKnight(position Float3, id PlayerID) *Fighter {
 		GoalPosition: position,
 		Strength:     10,
 		AreaOfAttack: 1,
-		AttackSpeed:  1,
+		AttackDelay:  1,
+		Aggro: 	  false,
 		TimeTillNextAttack: 0,
 		TargetEntityId: -1,
 		Speed:        1,
@@ -115,6 +116,9 @@ func (g *Game) getClosestEnemy(f *Fighter, playerId PlayerID) *Fighter {
 				continue
 			}
 			distance := fighter.Position.subtract(f.Position).length()
+			if distance > aggroRadius {
+				continue
+			}
 			if closest == nil || distance < closestDistance {
 				closest = fighter
 				closestDistance = distance
@@ -151,8 +155,10 @@ func (f *Fighter) huntDown(dt float64) {
 	if f.Position.subtract(target.GetPosition()).length() <= f.AreaOfAttack {
 		if f.TimeTillNextAttack <= 0 {
 			target.SetHealth(target.GetHealth() - f.Strength)	
-			f.TimeTillNextAttack = f.AttackSpeed
-			log.Printf("Target health: %v", target.GetHealth())
+			f.TimeTillNextAttack = f.AttackDelay
+			if target.GetHealth() <= 0 {
+				f.TargetEntityId = -1
+			}
 		}
 
 	} else {
@@ -163,6 +169,9 @@ func (f *Fighter) huntDown(dt float64) {
 
 func (f *Fighter) generalAttack(dt float64) {
 	closestEnemy := game.getClosestEnemy(f, 1)
+	if(closestEnemy == nil) {
+		return
+	}
 	f.TargetEntityId = closestEnemy.Id
 	f.huntDown(dt)
 }

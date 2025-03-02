@@ -89,6 +89,8 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 								case "moveUnit":
 									pos := mapToFloat3(command["pos"].(map[string]any))
 									id := EntityID(int(command["id"].(float64)))
+									moveType := command["type"].(string)
+									log.Printf("Move type: %v", moveType)
 									unit := game.getMovable(id)
 									if unit != nil {
 										unit.SetGoalPosition(pos)
@@ -160,12 +162,14 @@ func main() {
 	http.HandleFunc("/ws", handleConnections)
 
 	game = MakeTwoPlayerGame()
-	attacker := game.createKnight(Float3{1, .25, 1}, 1)
-	game.createKnight(Float3{2, .25, 1}, 1)
-	game.createKnight(Float3{4, .25, 0}, 1)
+	game.createKnight(Float3{5, .25, 1}, 1)
+	game.createKnight(Float3{5, .25, 2}, 1)
+	game.createKnight(Float3{5, .25, 3}, 1)
 
-	game.createKnight(Float3{1, .25, -1}, 1)
-	game.createKnight(Float3{10, .25, 10}, 2)
+	game.createKnight(Float3{5, .25, 4}, 1)
+	game.createKnight(Float3{-10, .25, 10}, 2)
+	game.createKnight(Float3{-11, .25, 10}, 2)
+	game.createKnight(Float3{-12, .25, 10}, 2)
 	game.createBuilder(Float3{0, .25, 0}, 1)
 	game.createBuilder(Float3{0, .25, 1}, 1)
 	game.createBuilder(Float3{0, .25, -1}, 1)
@@ -173,7 +177,6 @@ func main() {
 	game.addStone(1, 100)
 	game.addWood(1, 100)
 
-	attacker.generalAttack(0)
 	go broadcastGameState()
 
 	log.Println("Server started on :8080")

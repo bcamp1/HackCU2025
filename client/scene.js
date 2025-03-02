@@ -10,6 +10,7 @@ export class Scene {
 		this.buildings = []
 		this.buildingsMap = {}
 		this.playerId
+		this.moveType = 0
 		this.builderIds = {}
 		this.unitsMap = {}
 		this.isBuilding = false
@@ -272,6 +273,7 @@ export class Scene {
 					this.commandBuffer.push({
 						moveUnit: {
 							id: selection.entityId,
+							type: this.moveType === 0 ? "passive" : "aggressive",
 							pos: {
 								x: clickLocation.x + Math.random() * 2 - 1,
 								y: 0.5,
