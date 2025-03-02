@@ -260,7 +260,6 @@ export class Scene {
 		
 
 		if (e.button == 2) {
-			console.log(this.selectableObjects)
 			for (const selection of this.selectedUnits) {
 				
 				if(selection.entityId) {
@@ -276,19 +275,22 @@ export class Scene {
 					})
 				}
 			}
+			this.helper.isDown = false;
 		} else if (e.button == 0) {
 
 			this.selectedUnits = [];
 
 			this.selectionBox.startPoint.set(mX, mY)
 			this.helper.startPoint.set(e.clientX, e.clientY);
+
+			this.helper.isDown = true;
 		}
 	}
 
 	onMouseMove(e) {
 		const mX = (e.clientX / window.innerWidth) * 2 - 1
 		const mY = -(e.clientY / window.innerHeight) * 2 + 1
-		if (this.helper.isDown && e.button == 0) {
+		if (this.helper.isDown) {
 			this.selectionBox.endPoint.set(mX, mY)
 			this.helper.onSelectMove(e);
 			// this.selectedUnits = this.selectionBox.select()
@@ -309,7 +311,6 @@ export class Scene {
 			const dx = mX - this.selectionBox.startPoint.x;
 			const dy = mY - this.selectionBox.startPoint.y;
 			const distance = Math.sqrt(dx * dx + dy * dy);
-			console.log(distance)
 			this.helper.onSelectOver();
 			this.helper.isDown = false;
 
