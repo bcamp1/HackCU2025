@@ -2,15 +2,6 @@ import * as THREE from "three"
 import { Scene } from "./scene.js"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 
-const socket = new WebSocket("ws://localhost:8080/ws")
-
-socket.addEventListener("open", function (event) {
-	console.log("Connected to WebSocket server")
-})
-
-var troops = []
-var commandBuffer = []
-
 InitScene()
 var gameState = {}
 
@@ -19,18 +10,15 @@ async function InitScene() {
 	const scene = new Scene("threejs-container", models)
 	scene.startAnimationLoop()
 
-	function step() {
-		Object.entries(troops).forEach((value, _) => {
-			const troop = value[1]
-			const id = value[0]
-			if (scene.troops[troop.player][id] === undefined) {
-				scene.addTroop(id, troop.player, troop.pos.x, troop.pos.y, troop.pos.z)
-			} else {
-				scene.moveTroop(id, troop.player, troop.pos.x, troop.pos.y, troop.pos.z)
-			}
-		})
-	}
+	const socket = new WebSocket("ws://localhost:8080/ws")
 
+	socket.addEventListener("open", function (event) {
+		console.log("Connected to server", event.data)
+	})
+
+	socket.addEventListener("error", function (event) {
+		console.error("Error connecting to server", event)
+	})
 	// UI interaction: Rotate the cube when the button is clicked
 	// ADD HOUSE BUTTON
 	document.getElementById("addHouse").addEventListener("click", () => {
@@ -71,16 +59,18 @@ async function InitScene() {
 		gameState = JSON.parse(event.data)
 
 		if (scene.commandBuffer.length > 0) {
-			console.log("Sending message buffer", scene.commandBuffer)
 			socket.send(JSON.stringify(scene.commandBuffer))
 			scene.commandBuffer = []
 		} else {
 			socket.send(JSON.stringify([{ noop: true }]))
 		}
-		// console.log("Received game state", gameState)
-
-		step()
-		// You can handle the incoming message here
+		// if we just connected we should get our player id
+		if (gameState["playerId"] === undefined) {
+			step()
+		} else {
+			console.log("Game state", gameState)
+			scene.playerId = gameState["playerId"]
+		}
 	})
 
 	function step() {
@@ -88,27 +78,58 @@ async function InitScene() {
 			const playerData = gameState["players"][pId]
 			Object.keys(playerData["fighters"]).forEach((key, _) => {
 				const fighter = playerData["fighters"][key]
-				if (!Object.keys(scene.fighters).includes(pId)) {
-					scene.fighters[pId] = {}
-				}
-				if (scene.fighters[pId][fighter.id] === undefined) {
-					scene.addFighter(
+				if (scene.unitsMap[fighter.id] === undefined) {
+					scene.addUnit(
 						fighter.id,
 						pId,
-						fighter.type,
+						fighter.unitType,
 						fighter.position.x,
 						fighter.position.y,
 						fighter.position.z
 					)
 				} else {
-					scene.moveFighter(
+					scene.moveUnit(
 						fighter.id,
-						pId,
 						fighter.position.x,
 						fighter.position.y,
 						fighter.position.z
 					)
 				}
+				// todo remove fighter if dead
+			})
+			Object.keys(playerData["buildings"]).forEach((key, _) => {
+				const building = playerData["buildings"][key]
+				if (scene.buildingsMap[building.id] === undefined) {
+					scene.createBuilding(
+						building.id,
+						pId,
+						building.buildingType,
+						building.position.x,
+						building.position.z
+					)
+				}
+				// todo remove building if dead
+			})
+			Object.keys(playerData["builders"]).forEach((key, _) => {
+				const builder = playerData["builders"][key]
+				if (scene.unitsMap[builder.id] === undefined) {
+					scene.addUnit(
+						builder.id,
+						pId,
+						"builder",
+						builder.position.x,
+						builder.position.y,
+						builder.position.z
+					)
+				} else {
+					scene.moveUnit(
+						builder.id,
+						builder.position.x,
+						builder.position.y,
+						builder.position.z
+					)
+				}
+				// todo remove building if dead
 			})
 		})
 	}

@@ -5,9 +5,17 @@ import (
 )
 
 type GridLocation struct {
-	x int
-	y int
+	X int `json:"x"`
+	Z int `json:"z"`
 }
+
+func mapToGridLocation(m map[string]any) GridLocation {
+	return GridLocation{
+		X: int(m["x"].(float64)),
+		Z: int(m["z"].(float64)),
+	}
+}
+
 
 type PlayerID int
 type EntityID int
@@ -136,11 +144,15 @@ func (g *Game) update(dt float64) bool {
 	return true
 }
 
-func (g *Game) getFighterPointer(id EntityID) *Fighter {
+func (g *Game) getMovable(id EntityID) Movable {
 		for _, player := range g.players {
 			fighter, exists := player.fighters[id]
 			if exists {
 				return fighter
+			}
+			builder, exists := player.builders[id]
+			if exists {
+				return builder
 			}
 		}
 	return nil
