@@ -41,8 +41,8 @@ func (g *Game) CreatePlayer(id int, townHallLoc GridLocation) Player {
 		MaxHealth:    1000,
 		Health:       1000,
 		Progress:     0,
-		Cooldown:    0,
-		MaxCooldown:    5,
+		Cooldown:     0,
+		MaxCooldown:  5,
 	}
 
 	buildings := make(map[EntityID]*Building)
@@ -158,7 +158,7 @@ func (g *Game) GetState() GameState {
 
 func MakeTwoPlayerGame() Game {
 	player1TownHall := GridLocation{X: 0, Z: 0}
-	player2TownHall := GridLocation{X: 20, Z: 0}
+	player2TownHall := GridLocation{X: 30, Z: -30}
 
 	playerMap := make(map[PlayerID]*Player)
 	resources := make(map[EntityID]*Resource)
@@ -289,7 +289,7 @@ func (g *Game) update(dt float64) bool {
 			if building.Cooldown > 0 {
 				building.Cooldown -= dt
 			}
-				}
+		}
 	}
 	g.getDeceased()
 	return true

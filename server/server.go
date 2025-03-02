@@ -122,9 +122,9 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 								}
 
 							case "createKnight":
-								salt := Float3{rand.Float64()*10, rand.Float64()*10, rand.Float64()*10}
+								salt := Float3{rand.Float64() * 10, rand.Float64() * 10, rand.Float64() * 10}
 								for _, b := range game.players[playerID].buildings {
-									if b.BuildingType == "barracks"{
+									if b.BuildingType == "barracks" {
 										b.Cooldown = b.MaxCooldown
 										game.players[playerID].gold -= 50
 										game.createKnight(game.players[playerID].primaryTownHall.GetPosition().add(salt), playerID)
@@ -133,16 +133,15 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 								}
 
 							case "createBuilder":
-								salt := Float3{rand.Float64()*10, rand.Float64()*10, rand.Float64()*10}
+								salt := Float3{rand.Float64() * 10, rand.Float64() * 10, rand.Float64() * 10}
 								for _, b := range game.players[playerID].buildings {
-									if b.BuildingType == "townhall"{
+									if b.BuildingType == "townhall" {
 										game.players[playerID].gold -= 50
 										b.Cooldown = b.MaxCooldown
 										game.createBuilder(game.players[playerID].primaryTownHall.GetPosition().add(salt), playerID)
 										break
 									}
 								}
-
 
 							default:
 								log.Printf("Invalid command type: %v", key)
@@ -186,13 +185,6 @@ func initGame() {
 	log.Println("Initializing Game")
 	game = MakeTwoPlayerGame()
 
-	// game.createKnight(Float3{5, .25, 1}, 1)
-	// game.createKnight(Float3{5, .25, 2}, 1)
-	// game.createKnight(Float3{5, .25, 3}, 1)
-	// game.createKnight(Float3{5, .25, 4}, 1)
-	// game.createKnight(Float3{-9, .25, 10}, 2)
-	// game.createKnight(Float3{-11, .25, 10}, 2)
-	// game.createKnight(Float3{-10, .25, 10}, 2)
 	game.createBuilder(Float3{0, .25, 0}, 1)
 	game.createBuilder(Float3{0, .25, 1}, 1)
 	game.createBuilder(Float3{0, .25, -1}, 1)

@@ -74,7 +74,7 @@ func (g *Game) createKnight(position Float3, id PlayerID) *Fighter {
 	return knight
 }
 
-func (g *Game) getFighter (id EntityID) *Fighter {
+func (g *Game) getFighter(id EntityID) *Fighter {
 	for _, player := range g.players {
 		if fighter, ok := player.fighters[id]; ok {
 			return fighter
@@ -108,7 +108,7 @@ func (f *Fighter) GetHealth() float64 {
 }
 
 func (f *Fighter) SetAggro(a bool) {
-	f.Aggro = a 
+	f.Aggro = a
 }
 
 func (f *Fighter) SetHealth(h float64) {
@@ -181,8 +181,7 @@ func (b *Builder) GetHealth() float64 {
 
 func (b *Builder) SetAggro(a bool) {
 	b.Aggro = a
-}	
-
+}
 
 func (b *Builder) SetHealth(h float64) {
 	if h > b.MaxHealth {
@@ -203,11 +202,11 @@ type Building struct {
 	BuildingType string       `json:"buildingType"`
 	Position     GridLocation `json:"position"`
 	// Size         Float3      `json:"size"`
-	Cost      Cost    `json:"cost"`
-	MaxHealth float64 `json:"maxHealth"`
-	Health    float64 `json:"health"`
-	Progress  float64 `json:"progress"`
-	Cooldown float64 `json:"cooldown"`
+	Cost        Cost    `json:"cost"`
+	MaxHealth   float64 `json:"maxHealth"`
+	Health      float64 `json:"health"`
+	Progress    float64 `json:"progress"`
+	Cooldown    float64 `json:"cooldown"`
 	MaxCooldown float64 `json:"maxCooldown"`
 }
 
@@ -253,8 +252,8 @@ func (g *Game) createHouse(position GridLocation, playerId PlayerID) *Building {
 		Cost:         *cost,
 		Health:       500,
 		Progress:     0,
-		Cooldown:    0,
-		MaxCooldown:    10,
+		Cooldown:     0,
+		MaxCooldown:  10,
 	}
 	g.players[playerId].buildings[entityId] = building
 	return building
@@ -277,8 +276,8 @@ func (g *Game) createTownHall(position GridLocation, playerId PlayerID) *Buildin
 		MaxHealth:    1000,
 		Health:       1000,
 		Progress:     0,
-		Cooldown:    0,
-		MaxCooldown:    0,
+		Cooldown:     0,
+		MaxCooldown:  0,
 	}
 	g.players[playerId].buildings[entityId] = building
 	return building
@@ -301,7 +300,7 @@ func (g *Game) createBarracks(position GridLocation, playerId PlayerID) *Buildin
 		Cost:         *cost,
 		Health:       500,
 		Progress:     0,
-		Cooldown:    10,
+		Cooldown:     10,
 	}
 	g.players[playerId].buildings[entityId] = building
 	return building
@@ -328,7 +327,7 @@ func (g *Game) createGoldResource(position GridLocation) *Resource {
 		Id:           entityId,
 		ResourceType: "gold",
 		Position:     position,
-		Gold:         100,
+		Gold:         300,
 		Stone:        0,
 		Wood:         0,
 	}
@@ -343,7 +342,7 @@ func (g *Game) createStoneResource(position GridLocation) *Resource {
 		ResourceType: "stone",
 		Position:     position,
 		Gold:         0,
-		Stone:        100,
+		Stone:        300,
 		Wood:         0,
 	}
 	g.resources[entityId] = resource
