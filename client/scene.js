@@ -8,7 +8,6 @@ export class Scene {
 	constructor(containerId, models) {
 		this.keysPressed = {}
 		this.buildings = []
-		this.buildingsMap = {}
 		this.playerId
 		this.moveType = 0
 		this.builderIds = {}
@@ -425,8 +424,17 @@ export class Scene {
 
 	removeUnit(id) {
 		const unit = this.unitsMap[id]
-		this.scene.remove(unit.mesh)
-		this.renderer.renderLists.dispose()
+
+		const building = this.buildings.find((b) => b.id === id)
+		if (building) {
+			console.log("Removing building", building)
+			this.buildings = this.buildings.filter((b) => b.id !== id)
+			this.scene.remove(building.model)
+		} else {
+			this.scene.remove(unit.mesh)
+			this.renderer.renderLists.dispose()
+		}
+
 		delete this.unitsMap[id]
 	}
 
@@ -481,7 +489,7 @@ export class Scene {
 			this.modelsDict
 		)
 		this.buildings.push(newBuilding)
-		this.buildingsMap[id] = newBuilding
+		this.unitsMap[id] = newBuilding
 	}
 	createResourceNode(id, type, x, z, gold, stone, wood) {
 		const newBuilding = new Building(
@@ -496,7 +504,7 @@ export class Scene {
 			[gold, stone, wood]
 		)
 		this.buildings.push(newBuilding)
-		this.buildingsMap[id] = newBuilding
+		this.unitsMap[id] = newBuilding
 	}
 
 	checkGridCollisions(gridLocation, width, height) {
