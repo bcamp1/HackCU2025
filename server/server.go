@@ -89,52 +89,52 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 							log.Printf("key: %v", key)
 
 							switch key {
-								case "moveUnit":
-									pos := mapToFloat3(command["pos"].(map[string]any))
-									id := EntityID(int(command["id"].(float64)))
-									moveType := command["type"].(string)
-									unit := game.getMovable(id)
-									if moveType == "aggro" {
-										unit.SetAggro(true)
-									}else{
-										fighter := game.getFighter(id)
-										if fighter != nil {
-											fighter.TargetEntityId = -1
-										}
-										unit.SetAggro(false)
+							case "moveUnit":
+								pos := mapToFloat3(command["pos"].(map[string]any))
+								id := EntityID(int(command["id"].(float64)))
+								moveType := command["type"].(string)
+								unit := game.getMovable(id)
+								if moveType == "aggro" {
+									unit.SetAggro(true)
+								} else {
+									fighter := game.getFighter(id)
+									if fighter != nil {
+										fighter.TargetEntityId = -1
 									}
-									if unit != nil {
-										unit.SetGoalPosition(pos)
-									}
-
-								case "placeBuilding":
-									pos := mapToGridLocation(command["pos"].(map[string]any))
-									switch command["type"].(string) {
-										case "house":
-											game.createHouse(pos, playerID)
-										case "townhall":
-											game.createTownHall(pos, playerID)
-										case "barracks":
-											game.createBarracks(pos, playerID)
-										default:
-											log.Printf("Invalid building type: %v", command["buildingType"])
-									}
-
-
-								case "createKnight":
-									pos := mapToFloat3(command["pos"].(map[string]any))
-									game.createKnight(pos, playerID)
-
-								case "createBuilder":
-									pos := mapToFloat3(command["pos"].(map[string]any))
-									game.createBuilder(pos, playerID)
-
-								case "attack":
-									log.Printf("Attack command")
-
-								default:
-									log.Printf("Invalid command type: %v", key)
+									unit.SetAggro(false)
 								}
+								if unit != nil {
+									unit.SetGoalPosition(pos)
+								}
+
+							case "placeBuilding":
+								pos := mapToGridLocation(command["pos"].(map[string]any))
+								switch command["type"].(string) {
+								case "house":
+									game.createHouse(pos, playerID)
+								case "townhall":
+									game.createTownHall(pos, playerID)
+								case "barracks":
+									game.createBarracks(pos, playerID)
+								default:
+									log.Printf("Invalid building type: %v", command["buildingType"])
+								}
+
+							case "createKnight":
+								pos := mapToFloat3(command["pos"].(map[string]any))
+								game.createKnight(pos, playerID)
+
+							case "createBuilder":
+								pos := mapToFloat3(command["pos"].(map[string]any))
+								game.createBuilder(pos, playerID)
+
+							case "attack":
+								log.Printf("Attack command")
+
+							default:
+								log.Printf("Invalid command type: %v", key)
+							}
+
 						} else {
 							log.Printf("Invalid command format: %v", msgTemp[i][key])
 						}
@@ -174,27 +174,25 @@ func main() {
 
 	game = MakeTwoPlayerGame()
 
-	game.createKnight(Float3{5, .25, 1}, 1)
-	game.createKnight(Float3{5, .25, 2}, 1)
-	game.createKnight(Float3{5, .25, 3}, 1)
-
-	game.createKnight(Float3{5, .25, 4}, 1)
-	game.createKnight(Float3{-9, .25, 10}, 2)
-	game.createKnight(Float3{-11, .25, 10}, 2)
-	game.createKnight(Float3{-10, .25, 10}, 2)
+	// game.createKnight(Float3{5, .25, 1}, 1)
+	// game.createKnight(Float3{5, .25, 2}, 1)
+	// game.createKnight(Float3{5, .25, 3}, 1)
+	// game.createKnight(Float3{5, .25, 4}, 1)
+	// game.createKnight(Float3{-9, .25, 10}, 2)
+	// game.createKnight(Float3{-11, .25, 10}, 2)
+	// game.createKnight(Float3{-10, .25, 10}, 2)
 	game.createBuilder(Float3{0, .25, 0}, 1)
 	game.createBuilder(Float3{0, .25, 1}, 1)
 	game.createBuilder(Float3{0, .25, -1}, 1)
 	game.createBuilder(Float3{5, .25, 0}, 2)
 	game.createBuilder(Float3{5, .25, 1}, 2)
-	game.createBuilder(Float3{5, .25, -1},2)
+	game.createBuilder(Float3{5, .25, -1}, 2)
 	game.addGold(1, 1000)
 	game.addStone(1, 1000)
 	game.addWood(1, 100)
 	game.addGold(2, 2000)
 	game.addStone(2, 2000)
 	game.addWood(2, 20000)
-
 
 	go broadcastGameState()
 

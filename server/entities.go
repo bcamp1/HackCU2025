@@ -315,13 +315,17 @@ type Resource struct {
 	Wood         float64      `json:"wood"`
 }
 
+func (r Resource) AllResources() float64 {
+	return r.Gold + r.Stone + r.Wood
+}
+
 func (g *Game) createGoldResource(position GridLocation) *Resource {
 	entityId := g.newEntityID()
 	resource := &Resource{
 		Id:           entityId,
 		ResourceType: "gold",
 		Position:     position,
-		Gold:         1000,
+		Gold:         100,
 		Stone:        0,
 		Wood:         0,
 	}
@@ -336,7 +340,7 @@ func (g *Game) createStoneResource(position GridLocation) *Resource {
 		ResourceType: "stone",
 		Position:     position,
 		Gold:         0,
-		Stone:        1000,
+		Stone:        100,
 		Wood:         0,
 	}
 	g.resources[entityId] = resource
