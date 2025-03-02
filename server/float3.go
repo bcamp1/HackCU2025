@@ -27,6 +27,14 @@ func mapToFloat3(m map[string]any) Float3 {
 	}
 }
 
+func (grid GridLocation) toFloat3() Float3 {
+	return Float3{
+		X: float64(grid.X),
+		Y: 0,
+		Z: float64(grid.Z),
+	}
+}
+
 func (a Float3) scale(c float64) Float3 {
 	return Float3{
 		a.X * c,

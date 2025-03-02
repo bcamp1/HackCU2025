@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -269,14 +270,13 @@ func (g *Game) update(dt float64) bool {
 	for _, player := range g.players {
 		for _, fighter := range player.fighters {
 			updateMovable(fighter, dt)
-			// if fighter.TargetEntityId != -1 {
-			// 	fighter.huntDown(dt)
-			// } else {
-			// 	if( fighter.Position.subtract(fighter.GoalPosition).length() == 0 || fighter.Aggro) {
-			// 		// fmt.Printf("Player %v fighter %v is attacking\n", player.id, fighter.Id)
-			// 		fighter.generalAttack(dt)
-			// 	}
-			// }
+			if fighter.TargetEntityId != -1 {
+				fighter.huntDown(dt)
+			} else {
+				if( fighter.Position.subtract(fighter.GoalPosition).length() == 0 || fighter.Aggro) {
+					fighter.generalAttack(PlayerID(player.id),dt)
+				}
+			}
 		}
 		for _, builder := range player.builders {
 			updateMovable(builder, dt)
@@ -286,6 +286,98 @@ func (g *Game) update(dt float64) bool {
 	g.getDeceased()
 	return true
 }
+
+func (g *Game) getClosestEnemy(f *Fighter, playerId PlayerID) EntityID {
+	closest := EntityID(-1) 
+	var closestDistance float64
+	for _, player := range g.players {
+		if PlayerID(player.id) == playerId {
+			continue
+		}
+		for _, enemy := range player.fighters {
+			distance := enemy.Position.subtract(f.Position).length()
+			if distance > aggroRadius {
+				continue
+			}
+			if closest < 0 || distance < closestDistance {
+				closest = enemy.Id
+				closestDistance = distance
+			}
+		}
+		for _, enemy := range player.builders {
+			distance := enemy.Position.subtract(f.Position).length()
+			if distance > aggroRadius {
+				continue
+			}
+			if closest < 0 || distance < closestDistance {
+				closest = enemy.Id
+				closestDistance = distance
+			}
+		}
+		for _, enemy := range player.buildings {
+			distance := enemy.Position.toFloat3().subtract(f.Position).length()
+			if distance > aggroRadius {
+				continue
+			}
+			if closest < 0 || distance < closestDistance {
+				closest = enemy.Id
+				closestDistance = distance
+			}
+		}
+	}
+	return closest
+}
+
+func (g *Game) getKillable(id EntityID) Killable {
+	for _, player := range g.players {
+		if fighter, exists := player.fighters[id]; exists {
+			return fighter
+		}
+		if builder, exists := player.builders[id]; exists {
+			return builder
+		}
+		if building, exists := player.buildings[id]; exists {
+			return building
+		}
+	}
+	return nil
+}
+
+func (f *Fighter) huntDown(dt float64) {
+	target := game.getKillable(f.TargetEntityId)
+	if target == nil {
+		return
+	}
+	if target.GetHealth() <= 0 {
+		f.TargetEntityId = -1
+		return
+	}
+	if f.Position.subtract(target.GetPosition()).length() <= f.AreaOfAttack {
+		if f.TimeTillNextAttack <= 0 {
+			target.SetHealth(target.GetHealth() - f.Strength)	
+			f.TimeTillNextAttack = f.AttackDelay
+			fmt.Printf("Fighter %v attacked %v for %v damage\n", f.Id, target.GetHealth(), f.Strength)
+			if target.GetHealth() <= 0 {
+				f.TargetEntityId = -1
+			}
+		}
+
+	} else {
+		f.SetGoalPosition(target.GetPosition().subtract(Float3{X: .5, Y: .5, Z: .5}))
+	}
+	f.TimeTillNextAttack -= dt
+}
+
+func (f *Fighter) generalAttack(playerId PlayerID, dt float64) {
+	closestEnemy := game.getClosestEnemy(f, playerId)
+	if(closestEnemy  < 0) {
+		return
+	}
+	f.TargetEntityId = closestEnemy
+	f.huntDown(dt)
+}
+
+
 
 func (g *Game) getMovable(id EntityID) Movable {
 	for _, player := range g.players {
@@ -308,6 +400,18 @@ func (g *Game) getDeceased() {
 			if fighter.Health <= 0 {
 				deceased = append(deceased, fighter.Id)
 				g.deleteEntity(fighter.Id)
+			}
+		}
+		for _, builder := range player.builders {
+			if builder.Health <= 0 {
+				deceased = append(deceased, builder.Id)
+				g.deleteEntity(builder.Id)
+			}
+		}
+		for _, building := range player.buildings {
+			if building.Health <= 0 {
+				deceased = append(deceased, building.Id)
+				g.deleteEntity(building.Id)
 			}
 		}
 	}

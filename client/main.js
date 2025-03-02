@@ -108,7 +108,6 @@ async function InitScene() {
 	})
 
 	function step() {
-		console.log(gameState)
 		const playerData = gameState["players"][scene.playerId]
 		goldDisplay.innerText = playerData["gold"]
 		woodDisplay.innerText = playerData["wood"]
@@ -148,7 +147,7 @@ async function InitScene() {
 			})
 			Object.keys(playerData["buildings"]).forEach((key, _) => {
 				const building = playerData["buildings"][key]
-				if (scene.buildingsMap[building.id] === undefined) {
+				if (scene.unitsMap[building.id] === undefined) {
 					scene.createBuilding(
 						building.id,
 						pId,
@@ -180,50 +179,59 @@ async function InitScene() {
 				}
 				// todo remove building if dead
 			})
-            Object.keys(gameState["resources"]).forEach((key, _) => {
-                const resourceNode = gameState["resources"][key];
-                if (scene.buildingsMap[resourceNode.id] === undefined) {
+			Object.keys(gameState["resources"]).forEach((key, _) => {
+				const resourceNode = gameState["resources"][key]
+				if (scene.unitsMap[resourceNode.id] === undefined) {
 					scene.createResourceNode(
 						resourceNode.id,
 						resourceNode.resourceType,
 						resourceNode.position.x,
 						resourceNode.position.z,
-                        resourceNode.gold,
-                        resourceNode.stone,
-                        resourceNode.wood
+						resourceNode.gold,
+						resourceNode.stone,
+						resourceNode.wood
 					)
 				}
-            })
+			})
 		})
 	}
 }
 
 async function loadModels() {
 	var modelsDict = {}
-	const houseModel = await loadModel(
-		"public/models/buildings/house/house_full.glb"
+	const houseModel_red = await loadModel(
+		"public/models/buildings/house/house_red.glb"
 	)
-	const townhallModel = await loadModel(
-		"public/models/buildings/townhall/townhall_full.glb"
+	const houseModel_blue = await loadModel(
+		"public/models/buildings/house/house_blue.glb"
 	)
-	const barracksModel = await loadModel(
-		"public/models/buildings/barracks/barracks_full.glb"
+	const townhallModel_red = await loadModel(
+		"public/models/buildings/townhall/townhall_red.glb"
 	)
-    const goldModel = await loadModelResource(
+	const townhallModel_blue = await loadModel(
+		"public/models/buildings/townhall/townhall_blue.glb"
+	)
+	const barracksModel_red = await loadModel(
+		"public/models/buildings/barracks/barracks_red.glb"
+	)
+	const barracksModel_blue = await loadModel(
+		"public/models/buildings/barracks/barracks_blue.glb"
+	)
+	const goldModel = await loadModelResource(
 		"public/models/buildings/nodes/gold/gold.glb"
 	)
-    const stoneModel = await loadModelResource(
+	const stoneModel = await loadModelResource(
 		"public/models/buildings/nodes/stone/stone.glb"
 	)
-    const wood = await loadModelResource(
+	const wood = await loadModelResource(
 		"public/models/buildings/nodes/wood/wood.glb"
 	)
-	modelsDict.house = houseModel;
-	modelsDict.townhall = townhallModel;
-	modelsDict.barracks = barracksModel;
-    modelsDict.gold = goldModel;
-    modelsDict.stone = stoneModel;
-    modelsDict.wood = wood;
+	modelsDict.house = [houseModel_blue, houseModel_red]
+	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
+	modelsDict.barracks = [barracksModel_blue, barracksModel_red]
+	modelsDict.gold = goldModel
+	modelsDict.stone = stoneModel
+	modelsDict.wood = wood
 
 	return modelsDict
 }

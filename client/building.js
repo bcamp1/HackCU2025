@@ -23,7 +23,7 @@ export class Building {
 
 		// Construct mesh
 		if (this.type == "house") {
-			this.model = this.modelsDict.house.clone()
+			this.model = this.modelsDict.house[this.pId - 1].clone()
 			this.offset = new THREE.Vector3(0, 0, 0)
 			this.model.position.set(
 				this.gridPosition.x + this.offset.x,
@@ -62,7 +62,7 @@ export class Building {
 			this.height = 2
 			this.health = 100
 		} else if (this.type == "townhall") {
-			this.model = this.modelsDict.townhall.clone()
+			this.model = this.modelsDict.townhall[this.pId - 1].clone()
 			this.offset = new THREE.Vector3(1, 0, 1)
 			this.model.position.set(
 				this.gridPosition.x + this.offset.x,
@@ -101,7 +101,7 @@ export class Building {
 			this.height = 4
 			this.health = 100
 		} else if (this.type == "barracks") {
-			this.model = this.modelsDict.barracks.clone()
+			this.model = this.modelsDict.barracks[this.pId - 1].clone()
 			this.offset = new THREE.Vector3(1, 0, 1)
 			this.model.position.set(
 				this.gridPosition.x + this.offset.x,
