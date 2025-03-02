@@ -1,11 +1,21 @@
 import * as THREE from "three"
 import { SelectionBox } from "three/addons/interactive/SelectionBox.js"
 import { SelectionHelper } from "three/addons/interactive/SelectionHelper.js"
+import { Building } from "./building.js"
 
 export class Scene {
 	constructor(containerId) {
+		this.keysPressed = {}
+		this.buildings = []
+		this.isBuilding = false
+		this.canBuild = false
+		this.currentBuildingType = false
+		this.mouseX = 0
+		this.mouseY = 0
+
 		this.container = document.getElementById(containerId)
 		this.scene = new THREE.Scene()
+		this.scene.background = new THREE.Color(0x333344)
 		this.camera = new THREE.PerspectiveCamera(
 			75,
 			window.innerWidth / window.innerHeight,
@@ -14,28 +24,80 @@ export class Scene {
 		)
 		this.renderer = new THREE.WebGLRenderer({ antialias: true })
 		this.renderer.setSize(window.innerWidth, window.innerHeight)
+		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+		this.renderer.shadowMap.enabled = true
 		this.container.appendChild(this.renderer.domElement)
-		this.troops = { p1: {}, p2: {} }
-		this.cubes = []
 
-		const planeGeometry = new THREE.PlaneGeometry(100, 100)
-		const planeMaterial = new THREE.MeshBasicMaterial({
+		// Ground plane
+		const groundPlaneSize = 100
+		const planeGeometry = new THREE.PlaneGeometry(
+			groundPlaneSize,
+			groundPlaneSize
+		)
+		const planeMaterial = new THREE.MeshLambertMaterial({
 			color: 0xaaaaaa,
-			side: THREE.DoubleSide,
+			shadowSide: THREE.DoubleSide,
 		})
-		const plane = new THREE.Mesh(planeGeometry, planeMaterial)
-		plane.rotation.x = -Math.PI / 2
-		this.scene.add(plane)
+		this.groundPlane = new THREE.Mesh(planeGeometry, planeMaterial)
+		this.groundPlane.rotation.x = -Math.PI / 2
+		this.groundPlane.receiveShadow = true
+		this.scene.add(this.groundPlane)
 
 		this.camera.position.set(0, 5, 11)
 		this.camera.lookAt(new THREE.Vector3(0, 0, 0))
 		this.selectionBox = new SelectionBox(this.camera, this.scene)
 		this.helper = new SelectionHelper(this.renderer, "selectBox")
+		// Grid
+		const totalSize = groundPlaneSize
+		const cellSize = 1
+		const divisions = totalSize / cellSize
+		this.grid = new THREE.GridHelper(totalSize, divisions)
+		this.scene.add(this.grid)
+
+		// Temporary Buildings
+		this.TEMP_house = new Building("house", 0, 0, 0)
+		this.scene.add(this.TEMP_house.mesh)
+		this.TEMP_house.mesh.visible = false
+
+		this.TEMP_townhall = new Building("townhall", 0, 0, 0)
+		this.scene.add(this.TEMP_townhall.mesh)
+		this.TEMP_townhall.mesh.visible = false
+
+		// TODO: Scene Init
+
+		this.setupLights()
+
+		// TODO: REMOVE TO ADD CAMERA CONTROLLER
+		this.camera.position.set(0, 5, 11)
+		this.camera.lookAt(new THREE.Vector3(0, 0, 0))
 
 		window.addEventListener("resize", this.onWindowResize.bind(this))
 		this.container.addEventListener("mousedown", this.onMouseDown.bind(this))
 		this.container.addEventListener("mousemove", this.onMouseMove.bind(this))
 		this.container.addEventListener("mouseup", this.onMouseUp.bind(this))
+	}
+
+	/* Add all lights to the scene */
+	setupLights() {
+		const lights = [
+			new THREE.AmbientLight(0xffffff, 0),
+			new THREE.DirectionalLight(0xffffff, 3),
+			new THREE.DirectionalLight(0xffffff, 0.5),
+			new THREE.DirectionalLight(0xffffff, 0.2),
+		]
+
+		lights[1].position.set(0.2, 1, 0.2)
+		lights[2].position.set(1, 1, 0)
+		lights[3].position.set(0, 1, 1)
+
+		lights.forEach((light) => {
+			if (light.isDirectionalLight) {
+				light.castShadow = true
+				light.target.position.set(0, 0, 0)
+			}
+		})
+
+		this.scene.add(...lights)
 	}
 
 	onWindowResize() {
@@ -45,18 +107,14 @@ export class Scene {
 	}
 
 	onMouseDown(e) {
-		e.preventDefault()
+		this.handleClick(e.button, this.mouseX, this.mouseY)
 		for (const item of this.selectionBox.collection) {
 			if (!item.isSelectable) {
 				continue
 			}
 			item.material.color.set(0x00ff00)
 		}
-		this.selectionBox.startPoint.set(
-			(e.clientX / window.innerWidth) * 2 - 1,
-			(-e.clientY / window.innerHeight) * 2 + 1,
-			0.5
-		)
+		this.selectionBox.startPoint.set(this.mouseX, this.mouseY, 0.5)
 	}
 
 	onMouseMove(e) {
@@ -86,11 +144,7 @@ export class Scene {
 	}
 
 	onMouseUp(event) {
-		this.selectionBox.endPoint.set(
-			(event.clientX / window.innerWidth) * 2 - 1,
-			-(event.clientY / window.innerHeight) * 2 + 1,
-			0.5
-		)
+		this.selectionBox.endPoint.set(this.mouseX, this.mouseY, 0.5)
 
 		const allSelected = this.selectionBox.select()
 
@@ -153,5 +207,165 @@ export class Scene {
 	rotateCube(x, y) {
 		this.cube.rotation.x += x
 		this.cube.rotation.y += y
+	}
+
+	handleClick(mouseButton, mouseX, mouseY) {
+		const clickLocation = this.getMouseCoordinatesOnGroundPlane(mouseX, mouseY)
+
+		if (this.isBuilding) {
+			if (this.canBuild) {
+				if (mouseButton == 0 && clickLocation) {
+					// Left click
+					const buildingCoordinates = this.getGridCoordinates(clickLocation)
+					const newBuilding = new Building(
+						this.currentBuildingType,
+						buildingCoordinates.x,
+						buildingCoordinates.y,
+						buildingCoordinates.z
+					)
+					this.scene.add(newBuilding.mesh)
+					this.buildings.push(newBuilding)
+					this.isBuilding = false
+					return
+				} else {
+					// Other click
+					this.isBuilding = false
+					return
+				}
+			} else {
+				console.log("Can't Build there!")
+			}
+		}
+	}
+
+	checkGridCollisions(gridLocation, width, height) {
+		var collide = false
+		const buildingPositions = []
+		this.buildings.forEach((building) => {
+			const buildingPos = this.getGridCoordinates(building.mesh.position)
+			for (var x = 0; x < building.width; x++) {
+				for (var z = 0; z < building.height; z++) {
+					const posX = buildingPos.x - x
+					const posZ = buildingPos.z - z
+					const loc = new THREE.Vector3(posX, buildingPos.y, posZ)
+					buildingPositions.push(loc)
+				}
+			}
+		})
+
+		for (var x = 0; x < width; x++) {
+			for (var z = 0; z < height; z++) {
+				const posX = gridLocation.x + x
+				const posZ = gridLocation.z + z
+
+				buildingPositions.forEach((buildingPosition) => {
+					if (
+						Math.abs(posX - buildingPosition.x) < 0.01 &&
+						Math.abs(posZ - buildingPosition.z) < 0.01
+					) {
+						collide = true
+						return
+					}
+				})
+			}
+		}
+
+		return collide
+	}
+
+	getMouseCoordinatesOnGroundPlane(mouseX, mouseY) {
+		const raycaster = new THREE.Raycaster()
+		const mousePosition = new THREE.Vector2(mouseX, mouseY)
+		raycaster.setFromCamera(mousePosition, this.camera)
+		const intersects = raycaster.intersectObject(this.groundPlane)
+		if (intersects.length > 0) {
+			return intersects[0].point
+		} else {
+			return null
+		}
+	}
+
+	getGridCoordinates(position) {
+		const x = Math.floor(position.x)
+		const z = Math.floor(position.z)
+
+		return new THREE.Vector3(x, position.y, z)
+	}
+
+	updateCamera() {
+		const speed = 0.1 // Adjust speed as needed
+
+		// Move forward
+		if (this.keysPressed["ArrowUp"]) {
+			this.camera.position.z -= speed
+		}
+		// Move backward
+		if (this.keysPressed["ArrowDown"]) {
+			this.camera.position.z += speed
+		}
+		// Move left
+		if (this.keysPressed["ArrowLeft"]) {
+			this.camera.position.x -= speed
+		}
+		// Move right
+		if (this.keysPressed["ArrowRight"]) {
+			this.camera.position.x += speed
+		}
+		// Move up
+		if (this.keysPressed["w"] || this.keysPressed["W"]) {
+			this.camera.position.y += speed
+		}
+		// Move down
+		if (this.keysPressed["s"] || this.keysPressed["S"]) {
+			this.camera.position.y -= speed
+		}
+	}
+
+	animate() {
+		this.updateCamera()
+		this.grid.visible = this.isBuilding
+		if (this.isBuilding) {
+			const groundMousePos = this.getMouseCoordinatesOnGroundPlane(
+				this.mouseX,
+				this.mouseY
+			)
+			if (groundMousePos) {
+				var currentTEMP = this.TEMP_house
+				if (this.currentBuildingType == "house") {
+					currentTEMP = this.TEMP_house
+				} else if (this.currentBuildingType == "townhall") {
+					currentTEMP = this.TEMP_townhall
+				}
+
+				currentTEMP.mesh.visible = true
+				currentTEMP.mesh.material.transparent = true
+
+				const gridMousePos = this.getGridCoordinates(groundMousePos)
+				currentTEMP.moveTo(gridMousePos)
+				const collision = this.checkGridCollisions(
+					gridMousePos,
+					currentTEMP.width,
+					currentTEMP.height
+				)
+				if (collision) {
+					const obstructedColor = new THREE.Color().setHex(0x550000)
+					currentTEMP.mesh.material.color = obstructedColor
+					currentTEMP.mesh.scale.set(1.02, 1.02, 1.02)
+					currentTEMP.mesh.material.opacity = 0.9
+					this.canBuild = false
+				} else {
+					const unobstructedColor = new THREE.Color().setHex(0x005500)
+					currentTEMP.mesh.material.color = unobstructedColor
+					currentTEMP.mesh.scale.set(1, 1, 1)
+					currentTEMP.mesh.material.opacity = 0.3
+					this.canBuild = true
+				}
+			}
+		} else {
+			this.TEMP_house.mesh.visible = false
+			this.TEMP_townhall.mesh.visible = false
+			this.canBuild = false
+		}
+		this.renderer.render(this.scene, this.camera)
 	}
 }

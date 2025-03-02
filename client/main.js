@@ -41,8 +41,15 @@ function step() {
 scene.startAnimationLoop()
 
 // UI interaction: Rotate the cube when the button is clicked
-document.getElementById("rotateButton").addEventListener("click", () => {
-	commandBuffer.push({ moveTroop: { id: 1, pos: { x: 1, y: 1, z: 1 } } })
+// ADD HOUSE BUTTON
+document.getElementById("addHouse").addEventListener("click", () => {
+	scene.isBuilding = true
+	scene.currentBuildingType = "house"
+})
+// ADD TOWN HALL BUTTON
+document.getElementById("addTownHall").addEventListener("click", () => {
+	scene.isBuilding = true
+	scene.currentBuildingType = "townhall"
 })
 
 // Handle resizing
@@ -52,7 +59,19 @@ window.addEventListener("resize", () => {
 	renderer.setSize(window.innerWidth, window.innerHeight)
 })
 
-window.addEventListener("click", (event) => {
+window.addEventListener("mousemove", (event) => {
+	scene.mouseX = (event.clientX / window.innerWidth) * 2 - 1
+	scene.mouseY = -(event.clientY / window.innerHeight) * 2 + 1
+})
+
+window.addEventListener("keydown", (event) => {
+	scene.keysPressed[event.key] = true
+})
+
+window.addEventListener("keyup", (event) => {
+	scene.keysPressed[event.key] = false
+})
+
+window.addEventListener("contextmenu", (event) => {
 	event.preventDefault()
-	console.log("click")
 })
