@@ -17,9 +17,9 @@ export class Scene {
 		this.currentBuildingType = false
 		this.mouseX = 0
 		this.mouseY = 0
-		this.modelsDict = models;
-		this.zoom = 1;
-		const Orthographic = true;
+		this.modelsDict = models
+		this.zoom = 1
+		const Orthographic = true
 
 		this.commandBuffer = []
 		this.container = document.getElementById(containerId)
@@ -70,87 +70,94 @@ export class Scene {
 		// this.groundPlane.receiveShadow = true
 		// this.scene.add(this.groundPlane)
 
-
 		{
 			// Define the ground plane size and base color for your grass
-			const groundPlaneSize = 500;
-			var baseColor = { r: 8, g: 20, b: 9 }; // corresponds to 0x2c7037
+			const groundPlaneSize = 500
+			var baseColor = { r: 8, g: 20, b: 9 } // corresponds to 0x2c7037
 
 			// Set the desaturation factor (0 = no desaturation, 1 = fully grayscale)
-			const desaturationFactor = 0.2;
-			const darkenFactor = 1; // Multiply the grayscale value to darken it
+			const desaturationFactor = 0.2
+			const darkenFactor = 1 // Multiply the grayscale value to darken it
 
 			// Create a low-resolution canvas to generate large, subtle noise
-			const noiseCanvas = document.createElement('canvas');
-			noiseCanvas.width = 64;  // Low resolution for large noise blocks
-			noiseCanvas.height = 64;
-			const noiseContext = noiseCanvas.getContext('2d');
+			const noiseCanvas = document.createElement("canvas")
+			noiseCanvas.width = 64 // Low resolution for large noise blocks
+			noiseCanvas.height = 64
+			const noiseContext = noiseCanvas.getContext("2d")
 
 			// Create image data to fill with noise
-			const noiseImageData = noiseContext.createImageData(noiseCanvas.width, noiseCanvas.height);
-			const noiseData = noiseImageData.data;
+			const noiseImageData = noiseContext.createImageData(
+				noiseCanvas.width,
+				noiseCanvas.height
+			)
+			const noiseData = noiseImageData.data
 
 			// Loop through each pixel and add a slight random offset to the base color
 			for (let y = 0; y < noiseCanvas.height; y++) {
 				for (let x = 0; x < noiseCanvas.width; x++) {
-					const index = (y * noiseCanvas.width + x) * 4;
+					const index = (y * noiseCanvas.width + x) * 4
 					// Generate a noise value between -15 and 15 for subtle variation
-					const noiseVal = (Math.random() * 4) - 10;
+					const noiseVal = Math.random() * 4 - 10
 
 					// Apply the noise to each channel
-					let r = baseColor.r + noiseVal;
-					let g = baseColor.g + noiseVal;
-					let b = baseColor.b + noiseVal;
+					let r = baseColor.r + noiseVal
+					let g = baseColor.g + noiseVal
+					let b = baseColor.b + noiseVal
 
 					// Clamp the values to valid [0, 255] range
-					r = Math.min(255, Math.max(0, r));
-					g = Math.min(255, Math.max(0, g));
-					b = Math.min(255, Math.max(0, b));
+					r = Math.min(255, Math.max(0, r))
+					g = Math.min(255, Math.max(0, g))
+					b = Math.min(255, Math.max(0, b))
 
 					// Compute the grayscale value using the luminosity method
-					const gray = r * 0.299 + g * 0.587 + b * 0.114;
-					const darkGray = gray * darkenFactor;
+					const gray = r * 0.299 + g * 0.587 + b * 0.114
+					const darkGray = gray * darkenFactor
 					// Blend the original color with the grayscale based on the desaturation factor
-					r = r * (1 - desaturationFactor) + darkGray * desaturationFactor;
-					g = g * (1 - desaturationFactor) + darkGray * desaturationFactor;
-					b = b * (1 - desaturationFactor) + darkGray * desaturationFactor;
+					r = r * (1 - desaturationFactor) + darkGray * desaturationFactor
+					g = g * (1 - desaturationFactor) + darkGray * desaturationFactor
+					b = b * (1 - desaturationFactor) + darkGray * desaturationFactor
 
 					// Final clamp just in case
-					noiseData[index] = Math.min(255, Math.max(0, r));
-					noiseData[index + 1] = Math.min(255, Math.max(0, g));
-					noiseData[index + 2] = Math.min(255, Math.max(0, b));
-					noiseData[index + 3] = 255; // Fully opaque
+					noiseData[index] = Math.min(255, Math.max(0, r))
+					noiseData[index + 1] = Math.min(255, Math.max(0, g))
+					noiseData[index + 2] = Math.min(255, Math.max(0, b))
+					noiseData[index + 3] = 255 // Fully opaque
 				}
 			}
 
 			// Draw the generated noise data onto the canvas
-			noiseContext.putImageData(noiseImageData, 0, 0);
+			noiseContext.putImageData(noiseImageData, 0, 0)
 
 			// Create a texture from the canvas
-			const noiseTexture = new THREE.CanvasTexture(noiseCanvas);
+			const noiseTexture = new THREE.CanvasTexture(noiseCanvas)
 			// Set the texture to repeat so it covers the entire plane
-			noiseTexture.wrapS = THREE.RepeatWrapping;
-			noiseTexture.wrapT = THREE.RepeatWrapping;
-			noiseTexture.repeat.set(groundPlaneSize / noiseCanvas.width, groundPlaneSize / noiseCanvas.height);
+			noiseTexture.wrapS = THREE.RepeatWrapping
+			noiseTexture.wrapT = THREE.RepeatWrapping
+			noiseTexture.repeat.set(
+				groundPlaneSize / noiseCanvas.width,
+				groundPlaneSize / noiseCanvas.height
+			)
 
 			// Optionally, use NearestFilter to keep the blocky noise effect
-			noiseTexture.minFilter = THREE.NearestFilter;
-			noiseTexture.magFilter = THREE.NearestFilter;
+			noiseTexture.minFilter = THREE.NearestFilter
+			noiseTexture.magFilter = THREE.NearestFilter
 
 			// Create your plane geometry and material using the noise texture
-			const planeGeometry = new THREE.PlaneGeometry(groundPlaneSize, groundPlaneSize);
+			const planeGeometry = new THREE.PlaneGeometry(
+				groundPlaneSize,
+				groundPlaneSize
+			)
 			const planeMaterial = new THREE.MeshLambertMaterial({
 				map: noiseTexture,
 				side: THREE.DoubleSide,
-			});
+			})
 
 			// Create the mesh, rotate it to lay flat, and add to the scene
-			this.groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
-			this.groundPlane.rotation.x = -Math.PI / 2;
-			this.groundPlane.receiveShadow = true;
-			this.scene.add(this.groundPlane);
+			this.groundPlane = new THREE.Mesh(planeGeometry, planeMaterial)
+			this.groundPlane.rotation.x = -Math.PI / 2
+			this.groundPlane.receiveShadow = true
+			this.scene.add(this.groundPlane)
 		}
-
 
 		this.selectionBox = new SelectionBox(this.camera, this.scene)
 		this.helper = new SelectionHelper(this.renderer, "selectBox")
@@ -217,16 +224,16 @@ export class Scene {
 			new THREE.DirectionalLight(0xffffff, 0.2),
 		]
 
-		const d = 200;
-		lights[1].position.set(1*d, 1*d, -1*d)
-		lights[2].position.set(1*d, 1*d, 0)
-		lights[3].position.set(0, 1*d, 1*d)
+		const d = 200
+		lights[1].position.set(1 * d, 1 * d, -1 * d)
+		lights[2].position.set(1 * d, 1 * d, 0)
+		lights[3].position.set(0, 1 * d, 1 * d)
 
 		lights.forEach((light) => {
 			if (light.isDirectionalLight) {
 				light.castShadow = true
-				light.shadow.mapSize.width = 2048*3;
-				light.shadow.mapSize.height = 2048*3;
+				light.shadow.mapSize.width = 2048 * 3
+				light.shadow.mapSize.height = 2048 * 3
 
 				light.shadow.camera.left = -d
 				light.shadow.camera.right = d
@@ -279,7 +286,7 @@ export class Scene {
 		}
 
 		this.selectionBox.startPoint.set(e.clientX, e.clientY, 0.5)
-		this.helper.startPoint.set(e.clientX, e.clientY);
+		this.helper.startPoint.set(e.clientX, e.clientY)
 	}
 
 	onMouseMove(e) {
@@ -297,7 +304,7 @@ export class Scene {
 			// )
 			this.selectionBox.endPoint.set(e.clientX, e.clientY, 0.5)
 
-			this.helper.onSelectMove(e);
+			this.helper.onSelectMove(e)
 
 			const allSelected = this.selectionBox.select()
 
@@ -314,7 +321,7 @@ export class Scene {
 	onMouseUp(event) {
 		this.selectionBox.endPoint.set(event.clientX, event.clientY, 0.5)
 
-		this.helper.onSelectOver();
+		this.helper.onSelectOver()
 
 		const allSelected = this.selectionBox.select()
 
@@ -374,6 +381,13 @@ export class Scene {
 	moveUnit(id, x, y, z) {
 		const unit = this.unitsMap[id]
 		unit.mesh.position.set(x, unit.height / 2, z)
+	}
+
+	removeUnit(id) {
+		const unit = this.unitsMap[id]
+		this.scene.remove(unit.mesh)
+		this.renderer.renderLists.dispose()
+		delete this.unitsMap[id]
 	}
 
 	startAnimationLoop() {
@@ -485,41 +499,63 @@ export class Scene {
 	}
 
 	updateCamera() {
-		const speed = 0.2*this.zoom // Adjust speed as needed
+		const speed = 0.2 * this.zoom // Adjust speed as needed
 
-		const frustumSize = 20*this.zoom;
-		const aspect = window.innerWidth / window.innerHeight;
-		this.camera.left = -frustumSize * aspect / 2;
-		this.camera.right = frustumSize * aspect / 2;
-		this.camera.top = frustumSize / 2;
-		this.camera.bottom = -frustumSize / 2;
-		this.camera.updateProjectionMatrix();
+		const frustumSize = 20 * this.zoom
+		const aspect = window.innerWidth / window.innerHeight
+		this.camera.left = (-frustumSize * aspect) / 2
+		this.camera.right = (frustumSize * aspect) / 2
+		this.camera.top = frustumSize / 2
+		this.camera.bottom = -frustumSize / 2
+		this.camera.updateProjectionMatrix()
 
 		// Move forward
-		if (this.keysPressed["ArrowUp"] || this.keysPressed["w"] || this.keysPressed["W"]) {
-			this.camera.position.z -= speed*1.4;
-			this.camera.position.x -= speed*1.4;
+		if (
+			this.keysPressed["ArrowUp"] ||
+			this.keysPressed["w"] ||
+			this.keysPressed["W"]
+		) {
+			this.camera.position.z -= speed * 1.4
+			this.camera.position.x -= speed * 1.4
 		}
 		// Move backward
-		if (this.keysPressed["ArrowDown"] || this.keysPressed["s"] || this.keysPressed["S"]) {
-			this.camera.position.z += speed*1.4;
-			this.camera.position.x += speed*1.4;
+		if (
+			this.keysPressed["ArrowDown"] ||
+			this.keysPressed["s"] ||
+			this.keysPressed["S"]
+		) {
+			this.camera.position.z += speed * 1.4
+			this.camera.position.x += speed * 1.4
 		}
 		// Move left
-		if (this.keysPressed["ArrowLeft"] || this.keysPressed["a"] || this.keysPressed["A"]) {
+		if (
+			this.keysPressed["ArrowLeft"] ||
+			this.keysPressed["a"] ||
+			this.keysPressed["A"]
+		) {
 			this.camera.position.x -= speed
 			this.camera.position.z += speed
 		}
 		// Move right
-		if (this.keysPressed["ArrowRight"] || this.keysPressed["d"] || this.keysPressed["D"]) {
+		if (
+			this.keysPressed["ArrowRight"] ||
+			this.keysPressed["d"] ||
+			this.keysPressed["D"]
+		) {
 			this.camera.position.x += speed
 			this.camera.position.z -= speed
 		}
 
 		// Clamp the camera position to stay within 100 and 300 on the x and z axes
-		this.camera.position.x = Math.min(300, Math.max(100, this.camera.position.x));
-		this.camera.position.z = Math.min(300, Math.max(100, this.camera.position.z));
-		
+		this.camera.position.x = Math.min(
+			300,
+			Math.max(100, this.camera.position.x)
+		)
+		this.camera.position.z = Math.min(
+			300,
+			Math.max(100, this.camera.position.z)
+		)
+
 		//console.log(this.camera.position.x + " : " + this.camera.position.z)
 	}
 
