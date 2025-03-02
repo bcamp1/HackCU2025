@@ -98,7 +98,7 @@ export class Scene {
 					const noiseVal = (Math.random() * 4) - 10;
 
 					// Apply the noise to each channel
-					let r = baseColor.r + noiseVal;
+					let r = baseColor.r + 2*noiseVal;
 					let g = baseColor.g + noiseVal;
 					let b = baseColor.b + noiseVal;
 

@@ -35,8 +35,6 @@ type AttackCommand struct {
 	ATTACKER_ID int `json:"attacker_id"`
 }
 
-	
-
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -86,41 +84,40 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 							log.Printf("key: %v", key)
 
 							switch key {
-								case "moveUnit":
-									pos := mapToFloat3(command["pos"].(map[string]any))
-									id := EntityID(int(command["id"].(float64)))
-									unit := game.getMovable(id)
-									if unit != nil {
-										unit.SetGoalPosition(pos)
-									}
+							case "moveUnit":
+								pos := mapToFloat3(command["pos"].(map[string]any))
+								id := EntityID(int(command["id"].(float64)))
+								unit := game.getMovable(id)
+								if unit != nil {
+									unit.SetGoalPosition(pos)
+								}
 
-								case "placeBuilding":
-									pos := mapToGridLocation(command["pos"].(map[string]any))
-									switch command["type"].(string) {
-										case "house":
-											game.createHouse(pos, playerID)
-										case "townhall":
-											game.createTownHall(pos, playerID)
-										case "barracks":
-											game.createBarracks(pos, playerID)
-										default:
-											log.Printf("Invalid building type: %v", command["buildingType"])
-									}
-
-								case "createKnight":
-									pos := mapToFloat3(command["pos"].(map[string]any))
-									game.createKnight(pos, playerID)
-
-								case "createBuilder":
-									pos := mapToFloat3(command["pos"].(map[string]any))
-									game.createBuilder(pos, playerID)
-
-
-								case "attack":
-									log.Printf("Attack command")
-
+							case "placeBuilding":
+								pos := mapToGridLocation(command["pos"].(map[string]any))
+								switch command["type"].(string) {
+								case "house":
+									game.createHouse(pos, playerID)
+								case "townhall":
+									game.createTownHall(pos, playerID)
+								case "barracks":
+									game.createBarracks(pos, playerID)
 								default:
-									log.Printf("Invalid command type: %v", key)
+									log.Printf("Invalid building type: %v", command["buildingType"])
+								}
+
+							case "createKnight":
+								pos := mapToFloat3(command["pos"].(map[string]any))
+								game.createKnight(pos, playerID)
+
+							case "createBuilder":
+								pos := mapToFloat3(command["pos"].(map[string]any))
+								game.createBuilder(pos, playerID)
+
+							case "attack":
+								log.Printf("Attack command")
+
+							default:
+								log.Printf("Invalid command type: %v", key)
 							}
 						} else {
 							log.Printf("Invalid command format: %v", msgTemp[i][key])
@@ -167,9 +164,9 @@ func main() {
 	game.createBuilder(Float3{0, .25, 0}, 1)
 	game.createBuilder(Float3{0, .25, 1}, 1)
 	game.createBuilder(Float3{0, .25, -1}, 1)
-	game.addGold(1, 100)
-	game.addStone(1, 100)
-	game.addWood(1, 100)
+	game.addGold(1, 1000)
+	game.addStone(1, 1000)
+	game.addWood(1, 1000)
 	go broadcastGameState()
 
 	log.Println("Server started on :8080")
