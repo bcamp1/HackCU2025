@@ -35,8 +35,6 @@ type AttackCommand struct {
 	ATTACKER_ID int `json:"attacker_id"`
 }
 
-	
-
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -89,6 +87,8 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 								case "moveUnit":
 									pos := mapToFloat3(command["pos"].(map[string]any))
 									id := EntityID(int(command["id"].(float64)))
+									moveType := command["type"].(string)
+									log.Printf("Move type: %v", moveType)
 									unit := game.getMovable(id)
 									if unit != nil {
 										unit.SetGoalPosition(pos)
@@ -107,6 +107,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 											log.Printf("Invalid building type: %v", command["buildingType"])
 									}
 
+
 								case "createKnight":
 									pos := mapToFloat3(command["pos"].(map[string]any))
 									game.createKnight(pos, playerID)
@@ -115,13 +116,12 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 									pos := mapToFloat3(command["pos"].(map[string]any))
 									game.createBuilder(pos, playerID)
 
-
 								case "attack":
 									log.Printf("Attack command")
 
 								default:
 									log.Printf("Invalid command type: %v", key)
-							}
+								}
 						} else {
 							log.Printf("Invalid command format: %v", msgTemp[i][key])
 						}
@@ -160,20 +160,26 @@ func main() {
 	http.HandleFunc("/ws", handleConnections)
 
 	game = MakeTwoPlayerGame()
-	attacker := game.createKnight(Float3{1, .25, 1}, 1)
-	game.createKnight(Float3{2, .25, 1}, 1)
-	game.createKnight(Float3{4, .25, 0}, 1)
 
-	game.createKnight(Float3{1, .25, -1}, 1)
-	game.createKnight(Float3{10, .25, 10}, 2)
+	game.createKnight(Float3{5, .25, 1}, 1)
+	game.createKnight(Float3{5, .25, 2}, 1)
+	game.createKnight(Float3{5, .25, 3}, 1)
+
+	game.createKnight(Float3{5, .25, 4}, 1)
+	game.createKnight(Float3{-10, .25, 10}, 2)
+	game.createKnight(Float3{-11, .25, 10}, 2)
+	game.createKnight(Float3{-12, .25, 10}, 2)
 	game.createBuilder(Float3{0, .25, 0}, 1)
 	game.createBuilder(Float3{0, .25, 1}, 1)
 	game.createBuilder(Float3{0, .25, -1}, 1)
-	game.addGold(1, 100)
-	game.addStone(1, 100)
+	game.addGold(1, 1000)
+	game.addStone(1, 1000)
 	game.addWood(1, 100)
+	game.addGold(2, 2000)
+	game.addStone(2, 2000)
+	game.addWood(2, 20000)
 
-	attacker.generalAttack(0)
+
 	go broadcastGameState()
 
 	log.Println("Server started on :8080")
