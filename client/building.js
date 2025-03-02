@@ -89,6 +89,44 @@ export class Building {
             this.width = 4;
             this.height = 4;
             this.health = 100;
+        } else if(this.type == "barracks") {
+            this.model = this.modelsDict.barracks.clone();
+            this.offset = new THREE.Vector3(1,0,1);
+            this.model.position.set(this.gridPosition.x + this.offset.x, 
+                                    this.gridPosition.y + this.offset.y,
+                                    this.gridPosition.z + this.offset.z);
+            this.model.rotation.z = Math.PI/2;
+            scene.add(this.model);
+
+            this.materialsColors = [];
+            this.model.traverse((child) => {
+                if (child.isMesh) {
+                    child.material = child.material.clone();
+                    child.receiveShadow = true;
+                    this.materialsColors.push(child.material.color);
+
+                    if (child.userData.outline) {
+                        // Remove the old outline from the clone (if it exists)
+                        if (child.getObjectById(child.userData.outline.id)) {
+                          child.remove(child.userData.outline);
+                        }
+                        // Create a new outline using the mesh's geometry
+                        const edges = new THREE.EdgesGeometry(child.geometry);
+                        const lineMaterial = new THREE.LineBasicMaterial({
+                          color: 0x000000,
+                          linewidth: 10,
+                        });
+                        const newOutline = new THREE.LineSegments(edges, lineMaterial);
+                        // Store the new outline in userData for later reference
+                        child.userData.outline = newOutline;
+                        child.add(newOutline);
+                    }
+                }
+            });
+
+            this.width = 4;
+            this.height = 4;
+            this.health = 100;
         }
     }
 
@@ -114,7 +152,6 @@ export class Building {
     }
 
     instantiateBuilding(scene) {
-        // scene.add(this.mesh);
         scene.add(this.model);
     }
 
@@ -155,7 +192,7 @@ export class Building {
             if (child.isMesh) {
                 child.material.transparent = true;
                 if(child.userData.outline) {
-                    child.userData.outline.renderOrder = 1000;  // Higher than default objects
+                    child.userData.outline.renderOrder = 1000; 
                     child.userData.outline.material.depthTest = false;
                 }
             }

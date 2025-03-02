@@ -42,6 +42,12 @@ async function InitScene() {
 		scene.isBuilding = true
 		scene.currentBuildingType = "townhall"
 	})
+    // ADD BARRACKS BUTTON
+    document.getElementById("addBarracks").addEventListener("click", () => {
+		scene.isBuilding = true
+		scene.currentBuildingType = "barracks"
+	})
+
 
 	// Handle resizing
 	// window.addEventListener("resize", () => {
@@ -122,8 +128,12 @@ async function loadModels() {
     const townhallModel = await loadModel(
 		"public/models/buildings/townhall/townhall_full.glb"
 	)
+    const barracksModel = await loadModel(
+		"public/models/buildings/barracks/barracks_full.glb"
+	)
 	modelsDict.house = houseModel;
     modelsDict.townhall = townhallModel;
+    modelsDict.barracks = barracksModel;
 
 	return modelsDict
 }
