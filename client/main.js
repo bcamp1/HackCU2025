@@ -39,6 +39,16 @@ async function InitScene() {
 		scene.isBuilding = true
 		scene.currentBuildingType = "barracks"
 	})
+	const addKnight = document.getElementById("addKnight")
+	addKnight.addEventListener("click", () => {
+		console.log("Adding knight")
+		scene.commandBuffer.push({ createKnight: { some: "knight" } })
+	})
+	// ADD BARRACKS BUTTON
+	const addWorker = document.getElementById("addWorker")
+	addWorker.addEventListener("click", () => {
+		scene.commandBuffer.push({ createBuilder: { some: "builder" } })
+	})
 
 	const goldDisplay = document.getElementById("gold")
 	const woodDisplay = document.getElementById("wood")
@@ -118,6 +128,7 @@ async function InitScene() {
 	})
 
 	function step() {
+		// console.log("Game state", gameState)
 		const playerData = gameState["players"][scene.playerId]
 		goldDisplay.innerText = Math.round(playerData["gold"])
 		woodDisplay.innerText = Math.round(playerData["wood"])
@@ -136,27 +147,55 @@ async function InitScene() {
 			const playerData = gameState["players"][pId]
 			Object.keys(playerData["fighters"]).forEach((key, _) => {
 				const fighter = playerData["fighters"][key]
-                if (pId) {
-                    if (scene.unitsMap[fighter.id] === undefined) {
-                        scene.addUnit(
-                            fighter.id,
-                            pId,
-                            fighter.unitType,
-                            fighter.position.x,
-                            fighter.position.y,
-                            fighter.position.z
-                        )
-                    } else {
-                        scene.moveUnit(
-                            fighter.id,
-                            fighter.position.x,
-                            fighter.position.y,
-                            fighter.position.z
-                        )
-                    }
-                }
+				if (pId) {
+					if (scene.unitsMap[fighter.id] === undefined) {
+						scene.addUnit(
+							fighter.id,
+							pId,
+							fighter.unitType,
+							fighter.position.x,
+							fighter.position.y,
+							fighter.position.z
+						)
+					} else {
+						scene.moveUnit(
+							fighter.id,
+							fighter.position.x,
+							fighter.position.y,
+							fighter.position.z
+						)
+					}
+				}
 				// todo remove fighter if dead
 			})
+
+			if (
+				Object.keys(playerData["buildings"]).some(
+					(key, _) =>
+						playerData["buildings"][key].buildingType === "townhall" &&
+						playerData["buildings"][key].cooldown <= 0 &&
+						playerData.gold > 50
+				)
+			) {
+				addWorker.disabled = false
+			} else {
+				addWorker.disabled = true
+			}
+			if (
+				Object.keys(playerData["buildings"]).some(
+					(key, _) =>
+						// playerData["buildings"][key].buildingType === "barracks" &&
+						// playerData["buildings"][key].cooldown <= 0 &&
+						playerData.gold > 50
+				)
+			) {
+				addKnight.disabled = false
+			} else {
+				console.log(gameState)
+				// console.log("Disabling knight")
+				addKnight.disabled = true
+			}
+
 			Object.keys(playerData["buildings"]).forEach((key, _) => {
 				const building = playerData["buildings"][key]
 				if (scene.unitsMap[building.id] === undefined) {
@@ -252,33 +291,34 @@ async function loadModels() {
 	const wood = await loadModelResource(
 		"public/models/buildings/nodes/wood/wood.glb"
 	)
-    const knight_red_idle = await loadModelResource(
+	const knight_red_idle = await loadModelResource(
 		"public/models/characters/knight_red/knight_red_idle.glb"
 	)
-    const knight_blue_idle = await loadModelResource(
+	const knight_blue_idle = await loadModelResource(
 		"public/models/characters/knight_blue/knight_blue_idle.glb"
 	)
-    const knight_red_attack = await loadModelResource(
+	const knight_red_attack = await loadModelResource(
 		"public/models/characters/knight_red/knight_red_attack.glb"
 	)
-    const knight_blue_attack = await loadModelResource(
+	const knight_blue_attack = await loadModelResource(
 		"public/models/characters/knight_blue/knight_blue_attack.glb"
 	)
-    const worker_red = await loadModelResource(
+	const worker_red = await loadModelResource(
 		"public/models/characters/worker/worker_red.glb"
 	)
-    const worker_blue = await loadModelResource(
+	const worker_blue = await loadModelResource(
 		"public/models/characters/worker/worker_blue.glb"
 	)
-	modelsDict.house = [houseModel_blue, houseModel_red];
-	modelsDict.townhall = [townhallModel_blue, townhallModel_red];
-	modelsDict.barracks = [barracksModel_blue, barracksModel_red];
-    modelsDict.gold = goldModel;
-    modelsDict.stone = stoneModel;
-    modelsDict.wood = wood;
-    modelsDict.knight_attack = [knight_blue_attack, knight_red_attack];
-    modelsDict.knight_idle = [knight_blue_idle, knight_red_idle];
-    modelsDict.worker = [worker_blue, worker_red];
+
+	modelsDict.house = [houseModel_blue, houseModel_red]
+	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
+	modelsDict.barracks = [barracksModel_blue, barracksModel_red]
+	modelsDict.gold = goldModel
+	modelsDict.stone = stoneModel
+	modelsDict.wood = wood
+	modelsDict.knight_attack = [knight_blue_attack, knight_red_attack]
+	modelsDict.knight_idle = [knight_blue_idle, knight_red_idle]
+	modelsDict.worker = [worker_blue, worker_red]
 
 	return modelsDict
 }

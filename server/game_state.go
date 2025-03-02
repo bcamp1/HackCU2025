@@ -41,7 +41,8 @@ func (g *Game) CreatePlayer(id int, townHallLoc GridLocation) Player {
 		MaxHealth:    1000,
 		Health:       1000,
 		Progress:     0,
-		BuildTime:    10,
+		Cooldown:    0,
+		MaxCooldown:    5,
 	}
 
 	buildings := make(map[EntityID]*Building)
@@ -284,6 +285,11 @@ func (g *Game) update(dt float64) bool {
 			updateMovable(builder, dt)
 			g.updateBuilder(builder, player, dt)
 		}
+		for _, building := range player.buildings {
+			if building.Cooldown > 0 {
+				building.Cooldown -= dt
+			}
+				}
 	}
 	g.getDeceased()
 	return true
