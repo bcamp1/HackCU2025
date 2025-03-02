@@ -30,10 +30,27 @@ function step() {
 	Object.entries(troops).forEach((value, _) => {
 		const troop = value[1]
 		const id = value[0]
+		if (!Object.keys(scene.troops).includes(troop.player)) {
+			scene.troops[troop.player] = {}
+		}
 		if (scene.troops[troop.player][id] === undefined) {
-			scene.addTroop(id, troop.player, troop.pos.x, troop.pos.y, troop.pos.z)
+			scene.addFighter(
+				id,
+				troop.player,
+				"knight",
+				troop.pos.x,
+				troop.pos.y,
+				troop.pos.z
+			)
 		} else {
-			scene.moveTroop(id, troop.player, troop.pos.x, troop.pos.y, troop.pos.z)
+			scene.addFighter(
+				id,
+				troop.player,
+				"knight",
+				troop.pos.x,
+				troop.pos.y,
+				troop.pos.z
+			)
 		}
 	})
 }

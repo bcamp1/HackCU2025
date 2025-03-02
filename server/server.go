@@ -98,7 +98,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	for {
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 		// for i := range troops {
 		// 	tempTroop := troops[i]
 		// 	tempTroop.POS.X = math.Sin(float64(time.Now().UnixNano()) * 0.000000001)

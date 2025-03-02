@@ -2,6 +2,7 @@ import * as THREE from "three"
 import { SelectionBox } from "three/addons/interactive/SelectionBox.js"
 import { SelectionHelper } from "three/addons/interactive/SelectionHelper.js"
 import { Building } from "./building.js"
+import { Knight } from "./fighters.js"
 
 export class Scene {
 	constructor(containerId) {
@@ -12,6 +13,7 @@ export class Scene {
 		this.currentBuildingType = false
 		this.mouseX = 0
 		this.mouseY = 0
+		this.troops = {}
 
 		this.container = document.getElementById(containerId)
 		this.scene = new THREE.Scene()
@@ -108,12 +110,6 @@ export class Scene {
 
 	onMouseDown(e) {
 		this.handleClick(e.button, this.mouseX, this.mouseY)
-		for (const item of this.selectionBox.collection) {
-			if (!item.isSelectable) {
-				continue
-			}
-			item.material.color.set(0x00ff00)
-		}
 		this.selectionBox.startPoint.set(this.mouseX, this.mouseY, 0.5)
 	}
 
@@ -177,25 +173,23 @@ export class Scene {
 		this.scene.add(cube)
 	}
 
-	addTroop(id, player, x, y, z) {
-		const geometry = new THREE.BoxGeometry(1, 1, 1)
-		const material = new THREE.MeshBasicMaterial({ color: 0x1167ad })
-		const cube = new THREE.Mesh(geometry, material)
-		cube.position.set(x, y, z)
-		cube.castShadow = true
-		cube.isSelectable = true
-		const edges = new THREE.EdgesGeometry(cube.geometry)
-		const lineMaterial = new THREE.LineBasicMaterial({
-			color: 0x000000,
-			linewidth: 5,
-		})
-		const outline = new THREE.LineSegments(edges, lineMaterial)
-		cube.add(outline)
-		this.troops[player][id] = cube
-		this.scene.add(cube)
+	addFighter(id, player, type, x, y, z) {
+		let fighter
+		switch (type) {
+			case "knight":
+				fighter = new Knight(id)
+				break
+			default:
+				fighter = new Knight(id)
+				break
+		}
+		fighter.mesh.position.set(x, y, z)
+		fighter.mesh.isSelectable = true
+		this.troops[player][id] = fighter.id
+		this.scene.add(fighter.mesh)
 	}
 
-	moveTroop(id, player, x, y, z) {
+	moveFighter(id, player, x, y, z) {
 		const troop = this.troops[player][id]
 		troop.position.set(x, y, z)
 	}
