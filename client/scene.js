@@ -2,6 +2,7 @@ import * as THREE from "three"
 import { SelectionBox } from "three/addons/interactive/SelectionBox.js"
 import { SelectionHelper } from "three/addons/interactive/SelectionHelper.js"
 import { Building } from "./building.js"
+import { Knight } from "./fighters.js"
 
 export class Scene {
 	constructor(containerId, models) {
@@ -15,6 +16,8 @@ export class Scene {
 		this.modelsDict = models;
 		const Orthographic = true;
 
+		this.fighters = {}
+		this.commandBuffer = []
 		this.container = document.getElementById(containerId)
 		this.scene = new THREE.Scene()
 		this.scene.background = new THREE.Color(0x333344)
@@ -129,12 +132,36 @@ export class Scene {
 
 	onMouseDown(e) {
 		this.handleClick(e.button, this.mouseX, this.mouseY)
-		for (const item of this.selectionBox.collection) {
-			if (!item.isSelectable) {
+		const clickLocation = this.getMouseCoordinatesOnGroundPlane(
+			this.mouseX,
+			this.mouseY
+		)
+		console.log(e.button)
+		if (e.button === 2) {
+			for (const selection of this.selectionBox.collection) {
+				if (!selection.isSelectable || !selection.isMoveable) {
+					continue
+				}
+				this.commandBuffer.push({
+					moveTroop: {
+						id: selection.entityId,
+						pos: {
+							x: clickLocation.x + Math.random() * 2 - 1,
+							y: 0.5,
+							z: clickLocation.z + Math.random() * 2 - 1,
+						},
+					},
+				})
+			}
+		}
+		for (const selection of this.selectionBox.collection) {
+			if (!selection.isSelectable) {
 				continue
 			}
-			item.material.color.set(0x00ff00)
+
+			selection.children[0].material.color.set(0x000000)
 		}
+
 		this.selectionBox.startPoint.set(this.mouseX, this.mouseY, 0.5)
 	}
 
@@ -144,7 +171,6 @@ export class Scene {
 				if (!this.selectionBox.collection[i].isSelectable) {
 					continue
 				}
-				this.selectionBox.collection[i].material.color.set(0x000000)
 			}
 
 			this.selectionBox.endPoint.set(
@@ -159,7 +185,8 @@ export class Scene {
 				if (!allSelected[i].isSelectable) {
 					continue
 				}
-				allSelected[i].material.color.set(0xffffff)
+				console.log(allSelected[i])
+				this.selectionBox.collection[i].children[0].material.color.set(0xff0000)
 			}
 		}
 	}
@@ -173,7 +200,6 @@ export class Scene {
 			if (!allSelected[i].isSelectable) {
 				continue
 			}
-			allSelected[i].material.emissive.set(0xffffff)
 		}
 	}
 
@@ -198,27 +224,27 @@ export class Scene {
 		this.scene.add(cube)
 	}
 
-	addTroop(id, player, x, y, z) {
-		const geometry = new THREE.BoxGeometry(1, 1, 1)
-		const material = new THREE.MeshBasicMaterial({ color: 0x1167ad })
-		const cube = new THREE.Mesh(geometry, material)
-		cube.position.set(x, y, z)
-		cube.castShadow = true
-		cube.isSelectable = true
-		const edges = new THREE.EdgesGeometry(cube.geometry)
-		const lineMaterial = new THREE.LineBasicMaterial({
-			color: 0x000000,
-			linewidth: 5,
-		})
-		const outline = new THREE.LineSegments(edges, lineMaterial)
-		cube.add(outline)
-		this.troops[player][id] = cube
-		this.scene.add(cube)
+	addFighter(id, player, type, x, y, z) {
+		let fighter
+		switch (type) {
+			case "knight":
+				fighter = new Knight(id)
+				break
+			default:
+				fighter = new Knight(id)
+				break
+		}
+		fighter.mesh.position.set(x, y, z)
+		fighter.mesh.isSelectable = true
+		fighter.mesh.isMoveable = true
+		fighter.mesh.entityId = id
+		this.fighters[player][id] = fighter
+		this.scene.add(fighter.mesh)
 	}
 
-	moveTroop(id, player, x, y, z) {
-		const troop = this.troops[player][id]
-		troop.position.set(x, y, z)
+	moveFighter(id, player, x, y, z) {
+		const fighter = this.fighters[player][id]
+		fighter.mesh.position.set(x, y, z)
 	}
 
 	startAnimationLoop() {

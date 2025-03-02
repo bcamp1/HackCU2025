@@ -81,6 +81,54 @@ async function InitScene() {
         // You can handle the incoming message here
     })
 }
+var gameState = {}
+const scene = new Scene("threejs-container")
+
+socket.addEventListener("message", function (event) {
+	gameState = JSON.parse(event.data)
+
+	if (scene.commandBuffer.length > 0) {
+		console.log("Sending message buffer", scene.commandBuffer)
+		socket.send(JSON.stringify(scene.commandBuffer))
+		scene.commandBuffer = []
+	} else {
+		socket.send(JSON.stringify([{ noop: true }]))
+	}
+	// console.log("Received game state", gameState)
+
+	step()
+	// You can handle the incoming message here
+})
+
+function step() {
+	Object.keys(gameState["players"]).forEach((pId, _) => {
+		const playerData = gameState["players"][pId]
+		Object.keys(playerData["fighters"]).forEach((key, _) => {
+			const fighter = playerData["fighters"][key]
+			if (!Object.keys(scene.fighters).includes(pId)) {
+				scene.fighters[pId] = {}
+			}
+			if (scene.fighters[pId][fighter.id] === undefined) {
+				scene.addFighter(
+					fighter.id,
+					pId,
+					fighter.type,
+					fighter.position.x,
+					fighter.position.y,
+					fighter.position.z
+				)
+			} else {
+				scene.moveFighter(
+					fighter.id,
+					pId,
+					fighter.position.x,
+					fighter.position.y,
+					fighter.position.z
+				)
+			}
+		})
+	})
+}
 
 async function loadModels() {
     var modelsDict = {};
