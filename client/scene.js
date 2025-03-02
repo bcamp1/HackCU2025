@@ -86,6 +86,30 @@ export class Scene {
 		this.renderer.setSize(window.innerWidth, window.innerHeight)
 	}
 
+<<<<<<< HEAD
+=======
+	animate() {
+		this.renderer.render(this.scene, this.camera)
+	}
+
+	addCube(x, y, z, l) {
+		const geometry = new THREE.BoxGeometry(l, l, l)
+		const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+		const cube = new THREE.Mesh(geometry, material)
+		cube.position.set(x, y, z)
+		cube.castShadow = true
+		const edges = new THREE.EdgesGeometry(cube.geometry)
+		const lineMaterial = new THREE.LineBasicMaterial({
+			color: 0x000000,
+			linewidth: 5,
+		})
+		const outline = new THREE.LineSegments(edges, lineMaterial)
+		cube.add(outline)
+		this.cubes.push(cube)
+		this.scene.add(cube)
+	}
+
+>>>>>>> 612ced3d63d92428df5c82a1031addc16628fdd0
 	startAnimationLoop() {
 		this.renderer.setAnimationLoop(this.animate.bind(this))
 	}

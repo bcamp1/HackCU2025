@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math"
 	"net/http"
 	"time"
 
@@ -16,14 +17,15 @@ var upgrader = websocket.Upgrader{
 }
 
 var cubes = []struct {
-	X int     `json:"x"`
-	Y int     `json:"y"`
-	L float32 `json:"l"`
+	X float64     `json:"x"`
+	Y float64     `json:"y"`
+	Z float64    `json:"z"`
+	L float64 `json:"l"`
 }{
-	{X: 100, Y: 100, L: 50},
-	{X: 200, Y: 200, L: 50},
-	{X: 300, Y: 300, L: 50},
-	{X: 400, Y: 400, L: 50},
+	{X: 1, Y: 1,Z: 1, L: 1},
+	{X: 3, Y: 1,Z: 1, L: 1},
+	{X: -1, Y: 1,Z: 3, L: 1},
+	{X: 2, Y: 1,Z: 0, L: 1},
 }
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +37,9 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		time.Sleep(10 * time.Millisecond)
+		for i := range cubes {
+			cubes[i].X = math.Sin(float64(time.Now().UnixNano() )* 0.000000001 )
+		}
 		circleJSON, err := json.Marshal(cubes)
 		if err != nil {
 			log.Printf("Error marshalling JSON: %v", err)
