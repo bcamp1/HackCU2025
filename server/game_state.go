@@ -43,6 +43,7 @@ func MakePlayer(id int) Player {
 
 type Game struct {
 	elapsedTime float64
+	deceased    []EntityID
 	players     map[PlayerID]*Player
 	resources   map[EntityID]*Resource
 	entityIDs   map[EntityID]struct{}
@@ -50,6 +51,7 @@ type Game struct {
 
 type GameState struct {
 	ElapsedTime float64                  `json:"elapsedTime"`
+	Deceased    []EntityID               `json:"deceased"`
 	Players     map[PlayerID]PlayerState `json:"players"`
 	Resources   map[EntityID]Resource    `json:"resources"`
 }
@@ -97,6 +99,7 @@ func (g *Game) AddResources(n int) {
 func (g *Game) GetState() GameState {
 	state := GameState{}
 	state.ElapsedTime = g.elapsedTime
+	state.Deceased = g.deceased
 	state.Players = make(map[PlayerID]PlayerState)
 	state.Resources = make(map[EntityID]Resource)
 
@@ -173,11 +176,18 @@ func (g *Game) update(dt float64) bool {
 	for _, player := range g.players {
 		for _, fighter := range player.fighters {
 			updateMovable(fighter, dt)
+			if fighter.TargetEntityId != -1 {
+				fighter.huntDown(dt)
+			}
+			// } else {
+			// 	fighter.generalAttack()
+			// }
 		}
 		for _, builder := range player.builders {
 			updateMovable(builder, dt)
 		}
 	}
+	g.getDeceased()
 	return true
 }
 
@@ -193,6 +203,20 @@ func (g *Game) getMovable(id EntityID) Movable {
 		}
 	}
 	return nil
+}
+
+func (g *Game) getDeceased() {
+	deceased := []EntityID{}
+	for _, player := range g.players {
+		for _, fighter := range player.fighters {
+			if fighter.Health <= 0 {
+				deceased = append(deceased, fighter.Id)
+				delete(player.fighters, fighter.Id)
+			}
+		}
+	}
+	g.deceased = deceased
+
 }
 
 func (g *Game) addGold(player PlayerID, amount float64) {

@@ -157,16 +157,20 @@ func main() {
 	http.HandleFunc("/ws", handleConnections)
 
 	game = MakeTwoPlayerGame()
-	game.createKnight(Float3{1, .25, 1}, 1)
+	attacker := game.createKnight(Float3{1, .25, 1}, 1)
 	game.createKnight(Float3{2, .25, 1}, 1)
 	game.createKnight(Float3{4, .25, 0}, 1)
+
 	game.createKnight(Float3{1, .25, -1}, 1)
+	game.createKnight(Float3{10, .25, 10}, 2)
 	game.createBuilder(Float3{0, .25, 0}, 1)
 	game.createBuilder(Float3{0, .25, 1}, 1)
 	game.createBuilder(Float3{0, .25, -1}, 1)
 	game.addGold(1, 1000)
 	game.addStone(1, 1000)
 	game.addWood(1, 1000)
+
+	attacker.generalAttack(0)
 	go broadcastGameState()
 
 	log.Println("Server started on :8080")

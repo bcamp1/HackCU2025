@@ -1,5 +1,7 @@
 package main
 
+import "log"
+
 type Movable interface {
 	GetGoalPosition() Float3
 	SetGoalPosition(Float3)
@@ -34,34 +36,36 @@ func updateMovable(m Movable, dt float64) {
 }
 
 type Fighter struct {
-	Id             EntityID `json:"id"`
-	UnitType       string   `json:"unitType"`
-	Position       Float3   `json:"position"`
-	GoalPosition   Float3   `json:"goalPosition"`
-	TargetEntityId EntityID `json:"targetEntityId"`
-	Strength       float64  `json:"strength"`
-	Speed          float64  `json:"speed"`
-	AreaOfAttack   float64  `json:"areaOfAttack"`
-	AttackSpeed    float64  `json:"attackSpeed"`
-	MaxHealth      float64  `json:"maxHealth"`
-	Health         float64  `json:"health"`
+	Id                 EntityID `json:"id"`
+	UnitType           string   `json:"unitType"`
+	Position           Float3   `json:"position"`
+	GoalPosition       Float3   `json:"goalPosition"`
+	TargetEntityId     EntityID `json:"targetEntityId"`
+	Strength           float64  `json:"strength"`
+	Speed              float64  `json:"speed"`
+	TimeTillNextAttack float64  `json:"timeTillNextAttack"`
+	AreaOfAttack       float64  `json:"areaOfAttack"`
+	AttackSpeed        float64  `json:"attackSpeed"`
+	MaxHealth          float64  `json:"maxHealth"`
+	Health             float64  `json:"health"`
 }
 
 func (g *Game) createKnight(position Float3, id PlayerID) *Fighter {
 	entityId := g.newEntityID()
 
 	knight := &Fighter{
-		Id:             entityId,
-		UnitType:       "knight",
-		Position:       position,
-		GoalPosition:   position,
-		Strength:       40,
-		AreaOfAttack:   10,
-		AttackSpeed:    1,
-		TargetEntityId: -1,
-		Speed:          5,
-		Health:         100,
-		MaxHealth:      100,
+		Id:                 entityId,
+		UnitType:           "knight",
+		Position:           position,
+		GoalPosition:       position,
+		Strength:           10,
+		AreaOfAttack:       1,
+		AttackSpeed:        1,
+		TimeTillNextAttack: 0,
+		TargetEntityId:     -1,
+		Speed:              1,
+		Health:             100,
+		MaxHealth:          100,
 	}
 	g.players[id].fighters[entityId] = knight
 	return knight
@@ -92,7 +96,10 @@ func (f *Fighter) GetHealth() float64 {
 }
 
 func (f *Fighter) SetHealth(h float64) {
-	f.Health = max(h, f.MaxHealth)
+	if h > f.MaxHealth {
+		h = f.MaxHealth
+	}
+	f.Health = h
 }
 
 func (g *Game) getClosestEnemy(f *Fighter, playerId PlayerID) *Fighter {
@@ -131,7 +138,7 @@ func (g *Game) getKillable(id EntityID) Killable {
 	return nil
 }
 
-func (f *Fighter) huntDown() {
+func (f *Fighter) huntDown(dt float64) {
 	target := game.getKillable(f.TargetEntityId)
 	if target == nil {
 		return
@@ -141,10 +148,22 @@ func (f *Fighter) huntDown() {
 		return
 	}
 	if f.Position.subtract(target.GetPosition()).length() <= f.AreaOfAttack {
-		target.SetHealth(target.GetHealth() - f.Strength)
+		if f.TimeTillNextAttack <= 0 {
+			target.SetHealth(target.GetHealth() - f.Strength)
+			f.TimeTillNextAttack = f.AttackSpeed
+			log.Printf("Target health: %v", target.GetHealth())
+		}
+
 	} else {
-		f.SetGoalPosition(target.GetPosition())
+		f.SetGoalPosition(target.GetPosition().subtract(Float3{X: .5, Y: .5, Z: .5}))
 	}
+	f.TimeTillNextAttack -= dt
+}
+
+func (f *Fighter) generalAttack(dt float64) {
+	closestEnemy := game.getClosestEnemy(f, 1)
+	f.TargetEntityId = closestEnemy.Id
+	f.huntDown(dt)
 }
 
 const builderSpeed float64 = 1

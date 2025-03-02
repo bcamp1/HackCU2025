@@ -64,19 +64,22 @@ async function InitScene() {
 		scene.keysPressed[event.key] = false
 	})
 
+	window.addEventListener(
+		"wheel",
+		(event) => {
+			console.log(scene.zoom)
+			const minZoom = 0.5
+			const maxZoom = 3.0
+			const zoomSensitivity = 0.001
+			event.preventDefault()
 
-    window.addEventListener("wheel", (event) => {
-        console.log(scene.zoom)
-        const minZoom = 0.5;
-        const maxZoom = 3.0;
-        const zoomSensitivity = 0.001; 
-        event.preventDefault(); 
-
-        // Adjust zoom based on the vertical scroll amount (deltaY)
-        scene.zoom += event.deltaY * zoomSensitivity;
-        scene.zoom = Math.min(maxZoom, Math.max(minZoom, scene.zoom));
-        scene.updateCamera();
-    }, { passive: false });
+			// Adjust zoom based on the vertical scroll amount (deltaY)
+			scene.zoom += event.deltaY * zoomSensitivity
+			scene.zoom = Math.min(maxZoom, Math.max(minZoom, scene.zoom))
+			scene.updateCamera()
+		},
+		{ passive: false }
+	)
 
 	window.addEventListener("contextmenu", (event) => {
 		event.preventDefault()
@@ -108,6 +111,11 @@ async function InitScene() {
 		populationDisplay.innerText =
 			Object.keys(playerData["fighters"]).length +
 			Object.keys(playerData["builders"]).length
+
+		for (let i = 0; i < gameState["deceased"].length; i++) {
+			console.log("Removing unit", gameState["deceased"][i])
+			scene.removeUnit(gameState["deceased"][i])
+		}
 
 		// update the scene
 		Object.keys(gameState["players"]).forEach((pId, _) => {
