@@ -96,11 +96,11 @@ func (f *Fighter) SetHealth(h float64) {
 }
 
 
-func (g *Game) getClosestEnemy(f *Fighter, player PlayerID) *Fighter {
+func (g *Game) getClosestEnemy(f *Fighter, playerId PlayerID) *Fighter {
 	var closest *Fighter
 	var closestDistance float64
 	for _, player := range g.players {
-		if player.id == player {
+		if PlayerID(player.id) == playerId {
 			continue
 		}
 		for _, fighter := range player.fighters {
