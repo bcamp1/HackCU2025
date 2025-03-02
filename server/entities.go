@@ -34,34 +34,35 @@ func updateMovable(m Movable, dt float64) {
 }
 
 const aggroRadius float64 = 10
+
 type Fighter struct {
-	Id           EntityID `json:"id"`
-	UnitType  string  `json:"unitType"`
-	Position     Float3 `json:"position"`
-	GoalPosition Float3 `json:"goalPosition"`
-	TargetEntityId        EntityID `json:"targetEntityId"`
-	Aggro        bool `json:"aggro"`
-	Strength     float64 `json:"strength"`
-	Speed        float64 `json:"speed"`
-	TimeTillNextAttack float64 `json:"timeTillNextAttack"`
-	AreaOfAttack float64 `json:"areaOfAttack"`
-	AttackDelay  float64 `json:"attackSpeed"`
-	MaxHealth    float64 `json:"maxHealth"`
-	Health       float64 `json:"health"`
+	Id                 EntityID `json:"id"`
+	UnitType           string   `json:"unitType"`
+	Position           Float3   `json:"position"`
+	GoalPosition       Float3   `json:"goalPosition"`
+	TargetEntityId     EntityID `json:"targetEntityId"`
+	Aggro              bool     `json:"aggro"`
+	Strength           float64  `json:"strength"`
+	Speed              float64  `json:"speed"`
+	TimeTillNextAttack float64  `json:"timeTillNextAttack"`
+	AreaOfAttack       float64  `json:"areaOfAttack"`
+	AttackDelay        float64  `json:"attackSpeed"`
+	MaxHealth          float64  `json:"maxHealth"`
+	Health             float64  `json:"health"`
 }
 
 func (g *Game) createKnight(position Float3, id PlayerID) *Fighter {
 	entityId := g.newEntityID()
 
 	knight := &Fighter{
-		Id:           entityId,
-		UnitType:  "knight",
-		Position:     position,
-		GoalPosition: position,
-		Strength:     10,
-		AreaOfAttack: 1,
-		AttackDelay:  1,
-		Aggro: 	  false,
+		Id:                 entityId,
+		UnitType:           "knight",
+		Position:           position,
+		GoalPosition:       position,
+		Strength:           10,
+		AreaOfAttack:       1,
+		AttackDelay:        1,
+		Aggro:              false,
 		TimeTillNextAttack: 0,
 		TargetEntityId:     -1,
 		Speed:              1,
@@ -150,7 +151,7 @@ func (f *Fighter) huntDown(dt float64) {
 	}
 	if f.Position.subtract(target.GetPosition()).length() <= f.AreaOfAttack {
 		if f.TimeTillNextAttack <= 0 {
-			target.SetHealth(target.GetHealth() - f.Strength)	
+			target.SetHealth(target.GetHealth() - f.Strength)
 			f.TimeTillNextAttack = f.AttackDelay
 			if target.GetHealth() <= 0 {
 				f.TargetEntityId = -1
@@ -165,7 +166,7 @@ func (f *Fighter) huntDown(dt float64) {
 
 func (f *Fighter) generalAttack(dt float64) {
 	closestEnemy := game.getClosestEnemy(f, 1)
-	if(closestEnemy == nil) {
+	if closestEnemy == nil {
 		return
 	}
 	f.TargetEntityId = closestEnemy.Id
@@ -174,16 +175,20 @@ func (f *Fighter) generalAttack(dt float64) {
 
 const builderSpeed float64 = 1
 const builderMaxHealth float64 = 100
+const builderCarryingCapacity = 20
+const builderReach = 0.5
+const builderMineSpeed = 1
 
 type Builder struct {
-	Id           EntityID `json:"id"`
-	Position     Float3   `json:"position"`
-	UnitType     string   `json:"unitType"`
-	GoalPosition Float3   `json:"goalPosition"`
-	Gold         float64  `json:"gold"`
-	Stone        float64  `json:"stone"`
-	Wood         float64  `json:"wood"`
-	Health       float64  `json:"health"`
+	Id             EntityID  `json:"id"`
+	Position       Float3    `json:"position"`
+	UnitType       string    `json:"unitType"`
+	GoalPosition   Float3    `json:"goalPosition"`
+	Gold           float64   `json:"gold"`
+	Stone          float64   `json:"stone"`
+	Wood           float64   `json:"wood"`
+	Health         float64   `json:"health"`
+	ResourceTarget *Resource `json:"resource_target"`
 }
 
 func (g *Game) createBuilder(position Float3, id PlayerID) *Builder {

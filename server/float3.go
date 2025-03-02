@@ -11,6 +11,14 @@ type Float3 struct {
 	Z float64 `json:"z"`
 }
 
+func float3FromGridLocation(loc GridLocation) Float3 {
+	return Float3{
+		X: float64(loc.X),
+		Y: 0,
+		Z: float64(loc.Z),
+	}
+}
+
 func mapToFloat3(m map[string]any) Float3 {
 	return Float3{
 		X: m["x"].(float64),

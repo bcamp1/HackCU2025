@@ -20,25 +20,45 @@ type PlayerID int
 type EntityID int
 
 type Player struct {
-	id        int
-	gold      float64
-	stone     float64
-	wood      float64
-	fighters  map[EntityID]*Fighter
-	builders  map[EntityID]*Builder
-	buildings map[EntityID]*Building
+	id              int
+	gold            float64
+	stone           float64
+	wood            float64
+	primaryTownHall *Building
+	fighters        map[EntityID]*Fighter
+	builders        map[EntityID]*Builder
+	buildings       map[EntityID]*Building
 }
 
-func MakePlayer(id int) Player {
-	return Player{
-		id:        id,
-		gold:      0,
-		stone:     0,
-		wood:      0,
-		fighters:  make(map[EntityID]*Fighter),
-		builders:  make(map[EntityID]*Builder),
-		buildings: make(map[EntityID]*Building),
+func (g *Game) CreatePlayer(id int, townHallLoc GridLocation) Player {
+	townHallId := g.newEntityID()
+	townHall := &Building{
+		Id:           townHallId,
+		BuildingType: "townhall",
+		Position:     townHallLoc,
+		Cost:         Cost{0, 0, 0},
+		MaxHealth:    1000,
+		Health:       1000,
+		Progress:     0,
+		BuildTime:    10,
 	}
+
+	buildings := make(map[EntityID]*Building)
+	buildings[townHallId] = townHall
+
+	p := Player{
+		id:              id,
+		gold:            0,
+		stone:           0,
+		wood:            0,
+		fighters:        make(map[EntityID]*Fighter),
+		builders:        make(map[EntityID]*Builder),
+		buildings:       buildings,
+		primaryTownHall: townHall,
+	}
+
+	g.players[PlayerID(id)] = &p
+	return p
 }
 
 type Game struct {
@@ -135,18 +155,20 @@ func (g *Game) GetState() GameState {
 }
 
 func MakeTwoPlayerGame() Game {
-	player1 := MakePlayer(1)
-	player2 := MakePlayer(2)
+	player1TownHall := GridLocation{X: 0, Z: 0}
+	player2TownHall := GridLocation{X: 20, Z: 0}
+
 	playerMap := make(map[PlayerID]*Player)
 	resources := make(map[EntityID]*Resource)
-	playerMap[1] = &player1
-	playerMap[2] = &player2
+
 	g := Game{
 		elapsedTime: 0,
 		players:     playerMap,
 		entityIDs:   make(map[EntityID]struct{}),
 		resources:   resources,
 	}
+	g.CreatePlayer(1, player1TownHall)
+	g.CreatePlayer(2, player2TownHall)
 	g.AddResources(100)
 	return g
 }
@@ -162,12 +184,83 @@ func (g *Game) newEntityID() EntityID {
 	}
 }
 
+func (g Game) getNearestResource(position Float3) (*Resource, Float3) {
+	minDistance := float64(99999)
+	nearestResource := &Resource{}
+	nearestResourcePos := Float3{}
+	for _, resource := range g.resources {
+		resourcePosition := Float3{X: float64(resource.Position.X), Y: 0, Z: float64(resource.Position.Z)}
+		distance := resourcePosition.subtract(position).length()
+		if distance < minDistance {
+			minDistance = distance
+			nearestResource = resource
+			nearestResourcePos = resourcePosition
+		}
+	}
+	return nearestResource, nearestResourcePos
+}
+
 func (g *Game) deleteEntity(id EntityID) {
 	delete(g.entityIDs, id)
 	for pid, _ := range g.players {
 		delete(g.players[pid].builders, id)
 		delete(g.players[pid].fighters, id)
 		delete(g.players[pid].buildings, id)
+	}
+}
+
+func (g *Game) updateBuilder(builder *Builder, player *Player, dt float64) {
+	// Check how much they are carrying
+	carrying_amount := builder.Gold + builder.Wood + builder.Stone
+	//fmt.Println(carrying_amount)
+	if carrying_amount >= builderCarryingCapacity {
+		// Go back to town hall to deposit
+		townHallPosition := player.primaryTownHall.GetPosition()
+		builder.GoalPosition = townHallPosition
+
+		// Check if it's in reach
+		distanceToTownHall := townHallPosition.subtract(builder.Position).length()
+		if distanceToTownHall < builderReach {
+			// Deposit resources
+			player.gold += builder.Gold
+			player.stone += builder.Stone
+			player.wood += builder.Wood
+			builder.Gold = 0
+			builder.Stone = 0
+			builder.Wood = 0
+		}
+	} else {
+		// Continue to find resources
+		resource, targetPosition := g.getNearestResource(builder.Position)
+		builder.ResourceTarget = resource
+		builder.GoalPosition = targetPosition
+
+		// See if resource is in reach
+		distanceToResource := targetPosition.subtract(builder.Position).length()
+		if distanceToResource < builderReach {
+			// Mine resource
+			mined := min(resource.Gold+resource.Stone+resource.Wood, builderMineSpeed*dt)
+			switch resource.ResourceType {
+			case "gold":
+				builder.Gold += mined
+				resource.Gold -= mined
+				if resource.Gold <= 1 {
+					resource.Gold = 0
+				}
+			case "stone":
+				builder.Stone += mined
+				resource.Stone -= mined
+				if resource.Stone <= 1 {
+					resource.Stone = 0
+				}
+			case "wood":
+				builder.Wood += mined
+				resource.Wood -= mined
+				if resource.Wood <= 1 {
+					resource.Wood = 0
+				}
+			}
+		}
 	}
 }
 
@@ -187,6 +280,7 @@ func (g *Game) update(dt float64) bool {
 		}
 		for _, builder := range player.builders {
 			updateMovable(builder, dt)
+			g.updateBuilder(builder, player, dt)
 		}
 	}
 	g.getDeceased()
