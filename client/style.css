@@ -6,6 +6,14 @@ h1,p {
     margin: 5px
 }
 
+.selectBox {
+    border: 1px dashed #fff;             /* Dashed border for visibility */
+    background: rgba(0, 0, 255, 0.1);       /* Semi-transparent blue fill */
+    position: absolute;                    /* Position it over your renderer */
+    pointer-events: none;                  /* Allow mouse events to pass through */
+    z-index: 100;                          /* Ensure it appears on top */
+}
+
 #ui-topbar {
     background-color: #eed7a1;
     position: absolute;

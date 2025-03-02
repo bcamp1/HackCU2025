@@ -278,7 +278,8 @@ export class Scene {
 			selection.children[0].material.color.set(0x000000)
 		}
 
-		this.selectionBox.startPoint.set(this.mouseX, this.mouseY, 0.5)
+		this.selectionBox.startPoint.set(e.clientX, e.clientY, 0.5)
+		this.helper.startPoint.set(e.clientX, e.clientY);
 	}
 
 	onMouseMove(e) {
@@ -289,11 +290,14 @@ export class Scene {
 				}
 			}
 
-			this.selectionBox.endPoint.set(
-				(e.clientX / window.innerWidth) * 2 - 1,
-				-(e.clientY / window.innerHeight) * 2 + 1,
-				0.5
-			)
+			// this.selectionBox.endPoint.set(
+			// 	(e.clientX / window.innerWidth) * 2 - 1,
+			// 	-(e.clientY / window.innerHeight) * 2 + 1,
+			// 	0.5
+			// )
+			this.selectionBox.endPoint.set(e.clientX, e.clientY, 0.5)
+
+			this.helper.onSelectMove(e);
 
 			const allSelected = this.selectionBox.select()
 
@@ -308,7 +312,9 @@ export class Scene {
 	}
 
 	onMouseUp(event) {
-		this.selectionBox.endPoint.set(this.mouseX, this.mouseY, 0.5)
+		this.selectionBox.endPoint.set(event.clientX, event.clientY, 0.5)
+
+		this.helper.onSelectOver();
 
 		const allSelected = this.selectionBox.select()
 
