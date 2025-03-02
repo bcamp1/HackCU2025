@@ -9,12 +9,17 @@ export class Building {
     - width
     - height
     */
-	constructor(type, id, pId, x, y, z, scene, modelsDict) {
+	constructor(type, id, pId, x, y, z, scene, modelsDict, resources) {
 		this.type = type
 		this.id = id
 		this.gridPosition = new THREE.Vector3(x, y, z)
 		this.modelsDict = modelsDict
 		this.pId = pId
+        if (resources) {
+            this.resources = resources;
+        } else {
+            this.resources = [0,0,0];
+        }
 
 		// Construct mesh
 		if (this.type == "house") {
@@ -134,6 +139,75 @@ export class Building {
 
 			this.width = 4
 			this.height = 4
+			this.health = 100
+		} else if (this.type == "gold") {
+			this.model = this.modelsDict.gold.clone()
+			this.offset = new THREE.Vector3(-0.5, 0, -0.5)
+			this.model.position.set(
+				this.gridPosition.x + this.offset.x,
+				this.gridPosition.y + this.offset.y,
+				this.gridPosition.z + this.offset.z
+			)
+			this.model.rotation.z = -Math.PI
+			scene.add(this.model)
+
+			this.materialsColors = []
+			this.model.traverse((child) => {
+				if (child.isMesh) {
+					child.material = child.material.clone()
+					child.receiveShadow = true
+					this.materialsColors.push(child.material.color)
+				}
+			})
+
+			this.width = 1
+			this.height = 1
+			this.health = 100
+		} else if (this.type == "stone") {
+			this.model = this.modelsDict.stone.clone()
+			this.offset = new THREE.Vector3(-0.5, 0, -0.5)
+			this.model.position.set(
+				this.gridPosition.x + this.offset.x,
+				this.gridPosition.y + this.offset.y,
+				this.gridPosition.z + this.offset.z
+			)
+			this.model.rotation.z = Math.PI
+			scene.add(this.model)
+
+			this.materialsColors = []
+			this.model.traverse((child) => {
+				if (child.isMesh) {
+					child.material = child.material.clone()
+					child.receiveShadow = true
+					this.materialsColors.push(child.material.color)
+				}
+			})
+
+			this.width = 1
+			this.height = 1
+			this.health = 100
+		} else if (this.type == "wood") {
+			this.model = this.modelsDict.wood.clone()
+			this.offset = new THREE.Vector3(-0.5, 0, -0.5)
+			this.model.position.set(
+				this.gridPosition.x + this.offset.x,
+				this.gridPosition.y + this.offset.y,
+				this.gridPosition.z + this.offset.z
+			)
+			this.model.rotation.z = Math.PI / 2
+			scene.add(this.model)
+
+			this.materialsColors = []
+			this.model.traverse((child) => {
+				if (child.isMesh) {
+					child.material = child.material.clone()
+					child.receiveShadow = true
+					this.materialsColors.push(child.material.color)
+				}
+			})
+
+			this.width = 1
+			this.height = 1
 			this.health = 100
 		}
 	}

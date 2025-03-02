@@ -477,6 +477,21 @@ export class Scene {
 		this.buildings.push(newBuilding)
 		this.buildingsMap[id] = newBuilding
 	}
+	createResourceNode(id, type, x, z, gold, stone, wood) {
+		const newBuilding = new Building(
+			type,
+			id,
+			0,
+			x,
+			0,
+			z,
+			this.scene,
+			this.modelsDict,
+			[gold, stone, wood]
+		)
+		this.buildings.push(newBuilding)
+		this.buildingsMap[id] = newBuilding
+	}
 
 	checkGridCollisions(gridLocation, width, height) {
 		var collide = false

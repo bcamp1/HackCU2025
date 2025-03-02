@@ -179,6 +179,20 @@ async function InitScene() {
 				}
 				// todo remove building if dead
 			})
+            Object.keys(gameState["resources"]).forEach((key, _) => {
+                const resourceNode = gameState["resources"][key];
+                if (scene.buildingsMap[resourceNode.id] === undefined) {
+					scene.createResourceNode(
+						resourceNode.id,
+						resourceNode.resourceType,
+						resourceNode.position.x,
+						resourceNode.position.z,
+                        resourceNode.gold,
+                        resourceNode.stone,
+                        resourceNode.wood
+					)
+				}
+            })
 		})
 	}
 }
@@ -194,13 +208,13 @@ async function loadModels() {
 	const barracksModel = await loadModel(
 		"public/models/buildings/barracks/barracks_full.glb"
 	)
-    const goldModel = await loadModel(
+    const goldModel = await loadModelResource(
 		"public/models/buildings/nodes/gold/gold.glb"
 	)
-    const stoneModel = await loadModel(
+    const stoneModel = await loadModelResource(
 		"public/models/buildings/nodes/stone/stone.glb"
 	)
-    const wood = await loadModel(
+    const wood = await loadModelResource(
 		"public/models/buildings/nodes/wood/wood.glb"
 	)
 	modelsDict.house = houseModel;
@@ -233,6 +247,33 @@ async function loadModel(path) {
 						const outline = new THREE.LineSegments(edges, lineMaterial)
 						child.userData.outline = outline
 						child.add(outline)
+						child.castShadow = true
+					}
+				})
+				console.log("Model loaded")
+				resolve(model)
+			},
+			undefined,
+			(error) => {
+				console.error("Found an error", error)
+				reject(error)
+			}
+		)
+	})
+}
+
+async function loadModelResource(path) {
+	const loader = new GLTFLoader()
+
+	return new Promise((resolve, reject) => {
+		loader.load(
+			path,
+			(gltf) => {
+				let model = gltf.scene
+				model.rotation.x = -Math.PI / 2
+
+				model.traverse((child) => {
+					if (child.isMesh) {
 						child.castShadow = true
 					}
 				})
