@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -199,7 +200,7 @@ func initGame() {
 	game.addWood(2, 20000)
 }
 
-func main() {
+func startGame(portNumber uint) {
 	http.HandleFunc("/ws", handleConnections)
 
 	initGame()
@@ -207,8 +208,16 @@ func main() {
 	go broadcastGameState()
 
 	log.Println("Server started on :8080")
-	err := http.ListenAndServe(":8080", nil)
+	portFormated := fmt.Sprintf(":%v", portNumber)
+	err := http.ListenAndServe(portFormated, nil)
 	if err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
+}
+
+func handleStartGameRequest()
+
+func main() {
+	http.HandleFunc("/start", handleStartGameRequest)
+	startGame(8080)
 }
