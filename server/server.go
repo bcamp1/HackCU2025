@@ -19,6 +19,7 @@ var upgrader = websocket.Upgrader{
 }
 
 var game Game
+var numGames = 0
 var connections = make(map[*websocket.Conn]PlayerID)
 var connMutex sync.Mutex
 
@@ -200,24 +201,43 @@ func initGame() {
 	game.addWood(2, 20000)
 }
 
-func startGame(portNumber uint) {
-	http.HandleFunc("/ws", handleConnections)
+func startGame(portNumber string) {
+	slashPort := fmt.Sprintf("/%v", portNumber)
+	http.HandleFunc(slashPort, handleConnections)
 
 	initGame()
 
 	go broadcastGameState()
 
-	log.Println("Server started on :8080")
-	portFormated := fmt.Sprintf(":%v", portNumber)
-	err := http.ListenAndServe(portFormated, nil)
+	err := http.ListenAndServe(portNumber, nil)
+
 	if err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
 
-func handleStartGameRequest()
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
+func getStart(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	numGames++
+	portNumber := fmt.Sprintf(":%v", 8080+numGames)
+
+	fmt.Printf("Got start game request")
+	//response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 5\r\n\r\n%v", portNumber)
+	fmt.Printf("reponse: %v", portNumber)
+	res := make(map[string]string)
+	res["data"] = portNumber
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
+	go startGame(portNumber)
+}
 
 func main() {
-	http.HandleFunc("/start", handleStartGameRequest)
-	startGame(8080)
+	http.HandleFunc("/start", getStart)
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
+
 }
