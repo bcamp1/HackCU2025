@@ -1,10 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -110,35 +110,39 @@ func buildHeader(w *http.ResponseWriter) {
 	(*w).Header().Set("Content-Type", "application/json")
 }
 
-func handlePlay(w http.ResponseWriter, r *http.Request) {
-	buildHeader(&w)
+// func handlePlay(w http.ResponseWriter, r *http.Request) {
+// 	buildHeader(&w)
+// 	json.NewEncoder(w).Encode(res)
+
+// }
+
+func broadcastLobby(ipWsPairs []IpWsPair){
+	names := make([]string, 0)
+	for _, pair := range ipWsPairs {
+		names = append(names, pair.Name)
+	}
+	for _, pair := range ipWsPairs {
+		namesMap := make(map[string]any)
+		namesMap["names"] = names
+		pair.Ws.WriteJSON(namesMap)
+	}
+}
+
+func broadcastStart(ipWsPairs []IpWsPair){
 	gameNumber++
 	portNumber := PortNumber(startPort+gameNumber)
 
 	log.Printf("Starting game on port %v", portNumber)
-	res := make(map[string]PortNumber)
-	res["data"] = portNumber
-
-	json.NewEncoder(w).Encode(res)
-
+	res := make(map[string]any)
+	res["portNumber"] = portNumber
+	res["start"] = true
 	startGame(portNumber)
-}
 
-func broadcastLobby(ipWsPairs []IpWsPair){
-	names := make([]IpAddress, 0)
+
 	for _, pair := range ipWsPairs {
-		names = append(names, pair.Ip)
-	}
-	for _, pair := range ipWsPairs {
-		pair.Ws.WriteJSON(names)
+		pair.Ws.WriteJSON(res)
 	}
 }
-
-// func broadcastStart(ipWsPairs []IpWsPair){
-// 	for _, pair := range ipWsPairs {
-// 		pair.Ws.WriteJSON()
-// 	}
-// }
 
 func listenForStart(ws *websocket.Conn, gameCode GameCode){
 	for {
@@ -149,7 +153,7 @@ func listenForStart(ws *websocket.Conn, gameCode GameCode){
 			return
 		}
 		if start {
-			// broadcastStart(Lobbies[gameCode])
+			broadcastStart(Lobbies[gameCode])
 			log.Printf("Received start signal: %v", start)
 			break
 		}
@@ -162,17 +166,30 @@ func handleJoin(w http.ResponseWriter, r *http.Request){
 	if err != nil {
 		log.Fatalf("Failed to upgrade to websocket: %v", err)
 	}
+		
+	defer ws.Close()	
 
-	ip := IpAddress(ws.RemoteAddr().String())
+	ip := IpAddress(strings.Split(ws.RemoteAddr().String(), ":")[0])
 	gameCode := GameCode(r.URL.Query()["gameCode"][0])
 	name := r.URL.Query()["name"][0]
 
-	_, e := Lobbies[gameCode]	
+
+	v, e := Lobbies[gameCode]	
+	alreadyJoined := false
 
 	if !e {
 		Lobbies[gameCode] = []IpWsPair{{ip, ws, name}}
 	}else{
-		Lobbies[gameCode] = append(Lobbies[gameCode], IpWsPair{ip, ws, name})
+		for i, pair := range v {
+			if pair.Ip == ip {
+				Lobbies[gameCode][i].Name = name
+				Lobbies[gameCode][i].Ws = ws
+				alreadyJoined = true
+			}
+		}
+		if !alreadyJoined {
+			Lobbies[gameCode] = append(Lobbies[gameCode], IpWsPair{ip, ws, name})
+		}
 	}
 
 	broadcastLobby(Lobbies[gameCode])
@@ -180,7 +197,7 @@ func handleJoin(w http.ResponseWriter, r *http.Request){
 }
 
 func main() {
-	http.HandleFunc("/play", handlePlay)
+	// http.HandleFunc("/play", handlePlay)
 	http.HandleFunc("/join", handleJoin)
 
 	port:= fmt.Sprintf(":%v", startPort)
