@@ -29,7 +29,9 @@ ws.addEventListener('message', (event) => {
 	playerNames = data.names ?? []
 	console.log(playerNames)
 
-	playerList.children = []
+	while (playerList.firstChild) {
+		playerList.removeChild(playerList.lastChild);
+	}
 
 	playerNames.forEach(element => {
 		playerText = document.createElement("p");
