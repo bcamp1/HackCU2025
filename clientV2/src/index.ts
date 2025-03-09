@@ -2,9 +2,13 @@ const startButton = document.getElementById("start-game-button")
 
 const host = "10.0.0.43"
 startButton?.addEventListener("click", async () => {
-	const res = await fetch(`http://${host}:8080/join?code=hello`)
-	const port = (await res.json()).data
-	getGameData(port)
+	const lobbySock = new WebSocket(`ws://${host}:8080/join?gameCode=hello`)
+
+	lobbySock.addEventListener("message", function (event) {
+		console.log("event", event)
+	})
+
+	// getGameData(port)
 })
 
 const getGameData = (port: string) => {
