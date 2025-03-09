@@ -38,7 +38,13 @@ type GamePlayerPair struct {
 	player *Player
 }
 
-type Lobby map[GameCode][]IpAddress
+type IpWsPair struct {
+	Ip IpAddress
+	Ws *websocket.Conn
+	Name string
+}
+
+var Lobbies =  make(map[GameCode][]IpWsPair)
 
 var GameConnections = make(map[IpAddress]GamePlayerPair)   
 
@@ -118,6 +124,38 @@ func handlePlay(w http.ResponseWriter, r *http.Request) {
 	startGame(portNumber)
 }
 
+func broadcastLobby(ipWsPairs []IpWsPair){
+	names := make([]IpAddress, 0)
+	for _, pair := range ipWsPairs {
+		names = append(names, pair.Ip)
+	}
+	for _, pair := range ipWsPairs {
+		pair.Ws.WriteJSON(names)
+	}
+}
+
+// func broadcastStart(ipWsPairs []IpWsPair){
+// 	for _, pair := range ipWsPairs {
+// 		pair.Ws.WriteJSON()
+// 	}
+// }
+
+func listenForStart(ws *websocket.Conn, gameCode GameCode){
+	for {
+		var start bool
+		err := ws.ReadJSON(&start)
+		if err != nil {
+			log.Printf("Error reading JSON: %v", err)
+			return
+		}
+		if start {
+			// broadcastStart(Lobbies[gameCode])
+			log.Printf("Received start signal: %v", start)
+			break
+		}
+	}
+}
+
 func handleJoin(w http.ResponseWriter, r *http.Request){
 	ws, err := upgrader.Upgrade(w, r, nil)
 
@@ -125,10 +163,20 @@ func handleJoin(w http.ResponseWriter, r *http.Request){
 		log.Fatalf("Failed to upgrade to websocket: %v", err)
 	}
 
-	gameCode := r.URL.Query()
-	log.Printf("%v", gameCode)
+	ip := IpAddress(ws.RemoteAddr().String())
+	gameCode := GameCode(r.URL.Query()["gameCode"][0])
+	name := r.URL.Query()["name"][0]
 
-	ws.WriteMessage(0,[]byte("hello"))
+	_, e := Lobbies[gameCode]	
+
+	if !e {
+		Lobbies[gameCode] = []IpWsPair{{ip, ws, name}}
+	}else{
+		Lobbies[gameCode] = append(Lobbies[gameCode], IpWsPair{ip, ws, name})
+	}
+
+	broadcastLobby(Lobbies[gameCode])
+	listenForStart(ws, gameCode)
 }
 
 func main() {
