@@ -2,13 +2,19 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>RTS.io</title>
-		<link rel="stylesheet" href="style.css" />
+		<title>RTS.io!</title>
+		<link rel="stylesheet" href="./style.css" />
 	</head>
 
 	<body>
-		<h1>Welcome to Rts IO</h1>
-		<button id="start-game-button">Start game</button>
-		<script type="module" src="./bundle.js"></script>
+		<div id="main-container">
+			<h1>RTS.io</h1>
+			<form method="GET" action="/lobby">
+				<input type="text" placeholder="Game Code" id="input-gamecode" name="gameCode">
+				<input type="text" placeholder="Your Name" id="input-name" name="name">
+				<button id="join-lobby-button">JOIN LOBBY</button>
+			</form>
+		</div>
+		<script type="module" src="./index.js"></script>
 	</body>
 </html>
