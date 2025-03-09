@@ -5,13 +5,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 InitScene()
 var gameState = {}
 
+const urlSearchParams = new URLSearchParams(window.location.search)
+const port = urlSearchParams.get("port")
+
 async function InitScene() {
 	const models = await loadModels()
 	const scene = new Scene("threejs-container", models)
 	scene.startAnimationLoop()
 
 	// const socket = new WebSocket("ws://10.0.0.43:8080/ws")
-	const socket = new WebSocket("ws://localhost:8080/ws")
+	console.log("Connecting to server on port", port)
+	const socket = new WebSocket("ws://localhost:8080/" + port)
 
 	socket.addEventListener("open", function (event) {
 		console.log("Connected to server", event.data)
