@@ -4,7 +4,7 @@ const startButton = document.getElementById("start-game-button")
 const gameIdLabel = document.getElementById("game-id-label")
 const playerList = document.getElementById("player-list")
 
-const host = "10.0.0.43"
+const host = "localhost"
 
 // Get params
 const urlSearchParams = new URLSearchParams(window.location.search)
@@ -18,28 +18,35 @@ console.log(gameCode)
 console.log(playerName)
 
 // Render Player List
-playerNames = ['Steven', 'Jeff', 'Jordan', 'Mike']
+let playerNames = ['Steven', 'Jeff', 'Jordan', 'Mike']
 
 // Websocket
 const ws = new WebSocket(`ws://${host}:8080/join?gameCode=${gameCode}&name=${playerName}`)
 
 ws.addEventListener('message', (event) => {
+	// data can be {names: string[]} or {start: bool; portNumber: number}
 	data = JSON.parse(event.data)
-	console.log(data)
-	playerNames = data.names ?? []
-	console.log(playerNames)
+	if (data.names) {
+		playerNames = data.names ?? []
 
-	while (playerList.firstChild) {
-		playerList.removeChild(playerList.lastChild);
+		while (playerList.firstChild) {
+			playerList.removeChild(playerList.lastChild);
+		}
+
+		playerNames.forEach(element => {
+			playerText = document.createElement("p");
+			playerText.innerText = element
+			playerList.appendChild(playerText)
+		})
 	}
-
-	playerNames.forEach(element => {
-		playerText = document.createElement("p");
-		playerText.innerText = element
-		playerList.appendChild(playerText)
-	})
+	if (data.start) {
+		const portNumber = data.portNumber
+		window.history.pushState({}, "", `/play?portNumber=${portNumber}`)// this doesn't automatically fetch new page
+		window.location.reload()
+	}
 })
 
 startButton?.addEventListener("click", async () => {
-	// TODO
+	const startMsg = JSON.stringify({ start: true })
+	ws.send(startMsg)
 })
