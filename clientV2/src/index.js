@@ -8,6 +8,9 @@ var gameState = {}
 const urlSearchParams = new URLSearchParams(window.location.search)
 const port = urlSearchParams.get("portNumber")
 const host = "10.0.0.186"
+console.log("HELLP")
+
+
 
 async function InitScene() {
 	const models = await loadModels()
@@ -16,6 +19,21 @@ async function InitScene() {
 
 	// const socket = new WebSocket("ws://10.0.0.43:8080/ws")
 	const socket = new WebSocket(`ws://${host}:8080/${port}`)
+
+	window.addEventListener('keydown', (event) => {
+		if (event.key.toLowerCase() === 't') {
+			const command = prompt("Enter terminal command:")
+			console.log("Sending command: " + command);
+			const messageMap = {
+				"messageType": "command",
+				"data": {
+					"command": command
+				}
+			}
+			socket.send(JSON.stringify(messageMap))
+			console.log(JSON.stringify(messageMap))
+		}
+	});
 
 	socket.addEventListener("open", function (event) {
 		console.log("Connected to server", event.data)
@@ -110,9 +128,12 @@ async function InitScene() {
 
 	const handleMessage = (event) => {
 		const message = JSON.parse(event.data)
+		console.log(message)
 		switch (message.messageType) {
 			case "playerNumber":
 				playerNumElem.innerText = `${message.data.playerNumber}`
+				break
+			case "commandResponse":
 				break
 			default:
 				console.log("Unknown message type", message.type)
