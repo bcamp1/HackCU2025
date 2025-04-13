@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -17,6 +18,7 @@ var upgrader = websocket.Upgrader{
 
 var gameNumber = 0 
 var startPort = 8080
+var sgl sync.Mutex
 
 
 
@@ -27,6 +29,7 @@ type Game struct {
 
 type Player struct {
 	Number int
+	Name string
 }
 
 type IpAddress string
@@ -36,12 +39,28 @@ type GameCode string
 type GamePlayerPair struct {
 	game *Game
 	player *Player
+	ipws *IpWsPair
 }
 
 type IpWsPair struct {
 	Ip IpAddress
 	Ws *websocket.Conn
 	Name string
+}
+
+func (gp GamePlayerPair) sendMessage(messageType string, data interface{}) {
+	if gp.ipws.Ws == nil {
+		log.Printf("WebSocket connection is nil for IP: %v", gp.ipws.Ip)
+		return
+	}
+	messageMap := map[string]interface{}{
+		"messageType": messageType,
+		"data":        data,
+	}
+	err := gp.ipws.Ws.WriteJSON(messageMap)
+	if err != nil {
+		log.Printf("Error sending message: %v", err)
+	}
 }
 
 var Lobbies =  make(map[GameCode][]IpWsPair)
@@ -60,8 +79,8 @@ func initGame()*Game {
 	return game
 }
 
-func (g *Game)createPlayer() *Player{
-	player := Player{len(g.Players)}
+func (g *Game)createPlayer(name string) *Player{
+	player := Player{len(g.Players), name}
 	g.Players = append(g.Players, player)
 	return &player
 }
@@ -74,26 +93,33 @@ func handlePlayerConnection(portNumber PortNumber) http.HandlerFunc{
 			log.Fatalf("Failed to upgrade to websocket: %v", err)
 		}
 
-		ip := IpAddress(ws.RemoteAddr().String())
+		ip := IpAddress(strings.Split(ws.RemoteAddr().String(), ":")[0])
 
 		defer ws.Close()
-		var game *Game
 		var player *Player
 
-		value, exists := GameConnections[ip]
+		sgl.Lock()
+
+		gpPair, exists := GameConnections[ip]
+		log.Printf("GameConnections: %v", GameConnections)
+
 
 		if !exists {
-			game = GameList[portNumber]		
-			player = game.createPlayer()	
-			GameConnections[ip] = GamePlayerPair{game, player}
+			log.Printf("No existing connection found for IP: %v", ip)
+			ws.Close()
+			sgl.Unlock()
+			return
 		}else{
-			// game = value.game
-			player = value.player
+			player = gpPair.player
+			gpPair.ipws.Ws = ws
 		}
 
-		playerNumber := map[string]int{"playerNumber": player.Number}	
 
-		ws.WriteJSON(playerNumber)
+
+		sgl.Unlock()
+
+		playerNumber := map[string]int{"playerNumber": player.Number}	
+		gpPair.sendMessage("playerNumber", playerNumber)
 	}
 }
 
@@ -129,19 +155,30 @@ func broadcastLobby(ipWsPairs []IpWsPair){
 }
 
 func broadcastStart(ipWsPairs []IpWsPair){
+	sgl.Lock()
+	portNumber := PortNumber(startPort+gameNumber+1)
+	if _, exists := GameList[portNumber]; exists {
+		sgl.Unlock()
+		return;
+	}
 	gameNumber++
-	portNumber := PortNumber(startPort+gameNumber)
 
 	log.Printf("Starting game on port %v", portNumber)
 	res := make(map[string]any)
 	res["portNumber"] = portNumber
 	res["start"] = true
+	
 	startGame(portNumber)
-
-
 	for _, pair := range ipWsPairs {
+		game := GameList[portNumber]	
+		player := game.createPlayer(pair.Name)	
+		GameConnections[pair.Ip] = GamePlayerPair{GameList[portNumber], player, &pair}
 		pair.Ws.WriteJSON(res)
+		pair.Ws = nil
 	}
+
+	sgl.Unlock()
+	log.Printf("GameConnections: %v", GameConnections)
 }
 
 func listenForStart(ws *websocket.Conn, gameCode GameCode){
@@ -174,6 +211,7 @@ func handleJoin(w http.ResponseWriter, r *http.Request){
 	name := r.URL.Query()["name"][0]
 
 
+	sgl.Lock()
 	v, e := Lobbies[gameCode]	
 	alreadyJoined := false
 
@@ -191,6 +229,7 @@ func handleJoin(w http.ResponseWriter, r *http.Request){
 			Lobbies[gameCode] = append(Lobbies[gameCode], IpWsPair{ip, ws, name})
 		}
 	}
+	sgl.Unlock()
 
 	broadcastLobby(Lobbies[gameCode])
 	listenForStart(ws, gameCode)

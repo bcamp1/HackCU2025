@@ -110,10 +110,9 @@ async function InitScene() {
 
 	const handleMessage = (event) => {
 		const message = JSON.parse(event.data)
-		console.log("Received message", message)
-		switch (message.type) {
+		switch (message.messageType) {
 			case "playerNumber":
-				playerNumElem.innerText = `${message.playerNumber}`
+				playerNumElem.innerText = `${message.data.playerNumber}`
 				break
 			default:
 				console.log("Unknown message type", message.type)
