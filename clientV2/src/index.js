@@ -6,7 +6,8 @@ InitScene()
 var gameState = {}
 
 const urlSearchParams = new URLSearchParams(window.location.search)
-const port = urlSearchParams.get("port")
+const port = urlSearchParams.get("portNumber")
+const host = "10.0.0.186"
 
 async function InitScene() {
 	const models = await loadModels()
@@ -14,14 +15,13 @@ async function InitScene() {
 	scene.startAnimationLoop()
 
 	// const socket = new WebSocket("ws://10.0.0.43:8080/ws")
-	console.log("Connecting to server on port", port)
-	const socket = new WebSocket("ws://localhost:8080/" + port)
+	const socket = new WebSocket(`ws://${host}:8080/${port}`)
 
-	socket.addEventListener("open", function(event) {
+	socket.addEventListener("open", function (event) {
 		console.log("Connected to server", event.data)
 	})
 
-	socket.addEventListener("error", function(event) {
+	socket.addEventListener("error", function (event) {
 		console.error("Error connecting to server", event)
 	})
 	// UI interaction: Rotate the cube when the button is clicked
@@ -54,6 +54,8 @@ async function InitScene() {
 	addWorker?.addEventListener("click", () => {
 		scene.commandBuffer.push({ createBuilder: { some: "builder" } })
 	})
+
+	const playerNumElem = document.getElementById("player-number")
 
 	const goldDisplay = document.getElementById("gold")
 	const woodDisplay = document.getElementById("wood")
@@ -106,167 +108,21 @@ async function InitScene() {
 		event.preventDefault()
 	})
 
-	socket.addEventListener("message", function(event) {
-		gameState = JSON.parse(event.data)
-
-		if (scene.commandBuffer.length > 0) {
-			socket.send(JSON.stringify(scene.commandBuffer))
-			scene.commandBuffer = []
-		} else {
-			socket.send(JSON.stringify([{ noop: true }]))
+	const handleMessage = (event) => {
+		const message = JSON.parse(event.data)
+		console.log("Received message", message)
+		switch (message.type) {
+			case "playerNumber":
+				playerNumElem.innerText = `${message.playerNumber}`
+				break
+			default:
+				console.log("Unknown message type", message.type)
 		}
-		// if we just connected we should get our player id
-		if (gameState["playerId"] === undefined) {
-			step()
-		} else {
-			console.log("Game state", gameState)
-			scene.playerId = gameState["playerId"]
-			playerLabel.innerText = "Player " + scene.playerId
-			if (scene.playerId == "1") {
-				playerLabel.style = "color: blue"
-			} else if (scene.playerId == "2") {
-				playerLabel.style = "color: red"
-			} else {
-				playerLabel.style = "color: green"
-			}
-		}
-	})
-
-	function step() {
-		// console.log("Game state", gameState)
-		const playerData = gameState["players"][scene.playerId]
-		goldDisplay.innerText = Math.round(playerData["gold"])
-		woodDisplay.innerText = Math.round(playerData["wood"])
-		stoneDisplay.innerText = Math.round(playerData["stone"])
-		populationDisplay.innerText =
-			Object.keys(playerData["fighters"]).length +
-			Object.keys(playerData["builders"]).length
-
-		for (let i = 0; i < gameState["deceased"].length; i++) {
-			console.log("Removing unit", gameState["deceased"][i])
-			scene.removeUnit(gameState["deceased"][i])
-		}
-
-		// update the scene
-		Object.keys(gameState["players"]).forEach((pId, _) => {
-			const playerData = gameState["players"][pId]
-			Object.keys(playerData["fighters"]).forEach((key, _) => {
-				const fighter = playerData["fighters"][key]
-				if (pId) {
-					if (scene.unitsMap[fighter.id] === undefined) {
-						scene.addUnit(
-							fighter.id,
-							pId,
-							fighter.unitType,
-							fighter.position.x,
-							fighter.position.y,
-							fighter.position.z
-						)
-					} else {
-						scene.moveUnit(
-							fighter.id,
-							fighter.position.x,
-							fighter.position.y,
-							fighter.position.z
-						)
-					}
-				}
-				// todo remove fighter if dead
-			})
-
-			if (
-				Object.keys(playerData["buildings"]).some(
-					(key, _) =>
-						playerData["buildings"][key].buildingType === "townhall" &&
-						playerData["buildings"][key].cooldown <= 0 &&
-						playerData.gold > 50
-				)
-			) {
-				addWorker.disabled = false
-			} else {
-				addWorker.disabled = true
-			}
-			if (
-				Object.keys(playerData["buildings"]).some(
-					(key, _) =>
-						// playerData["buildings"][key].buildingType === "barracks" &&
-						// playerData["buildings"][key].cooldown <= 0 &&
-						playerData.gold > 50
-				)
-			) {
-				addKnight.disabled = false
-			} else {
-				console.log(gameState)
-				// console.log("Disabling knight")
-				addKnight.disabled = true
-			}
-
-			Object.keys(playerData["buildings"]).forEach((key, _) => {
-				const building = playerData["buildings"][key]
-				if (scene.unitsMap[building.id] === undefined) {
-					scene.createBuilding(
-						building.id,
-						pId,
-						building.buildingType,
-						building.position.x,
-						building.position.z
-					)
-				}
-				// todo remove building if dead
-			})
-			Object.keys(playerData["builders"]).forEach((key, _) => {
-				const builder = playerData["builders"][key]
-				if (scene.unitsMap[builder.id] === undefined) {
-					scene.addUnit(
-						builder.id,
-						pId,
-						"builder",
-						builder.position.x,
-						builder.position.y,
-						builder.position.z
-					)
-				} else {
-					scene.moveUnit(
-						builder.id,
-						builder.position.x,
-						builder.position.y,
-						builder.position.z
-					)
-				}
-				// todo remove building if dead
-			})
-			Object.keys(gameState["resources"]).forEach((key, _) => {
-				const resourceNode = gameState["resources"][key]
-				if (scene.unitsMap[resourceNode.id] === undefined) {
-					scene.createResourceNode(
-						resourceNode.id,
-						resourceNode.resourceType,
-						resourceNode.position.x,
-						resourceNode.position.z,
-						resourceNode.gold,
-						resourceNode.stone,
-						resourceNode.wood
-					)
-				}
-			})
-		})
-
-		var goldAmount = parseFloat(playerData["gold"])
-		var stoneAmount = parseFloat(playerData["stone"])
-		var woodAmount = parseFloat(playerData["wood"])
-
-		// Disable building buttons if not enough resources
-		// house, townhall, barracks
-		// cost := &Cost{Gold: 100, Stone: 0, Wood: 50}
-		// cost := &Cost{Gold: 500, Stone: 400, Wood: 200}
-		// cost := &Cost{Gold: 100, Stone: 100, Wood: 50}
-
-		addHouseButton.disabled = goldAmount < 100 || woodAmount < 50
-		addTownHallButton.disabled =
-			goldAmount < 500 || stoneAmount < 400 || woodAmount < 200
-		addBarracksButton.disabled =
-			goldAmount < 100 || stoneAmount < 100 || woodAmount < 50
 	}
+
+	socket.addEventListener("message", function (event) {
+		handleMessage(event)
+	})
 }
 
 async function loadModels() {

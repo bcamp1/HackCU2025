@@ -4,12 +4,12 @@ const startButton = document.getElementById("start-game-button")
 const gameIdLabel = document.getElementById("game-id-label")
 const playerList = document.getElementById("player-list")
 
-const host = "localhost"
+const host = "10.0.0.186"
 
 // Get params
 const urlSearchParams = new URLSearchParams(window.location.search)
-const gameCode = urlSearchParams.get('gameCode').toUpperCase();
-const playerName = urlSearchParams.get('name');
+const gameCode = urlSearchParams.get("gameCode").toUpperCase()
+const playerName = urlSearchParams.get("name")
 gameIdLabel.innerText = `Code: ${gameCode}`
 
 console.log(gameIdLabel)
@@ -18,30 +18,32 @@ console.log(gameCode)
 console.log(playerName)
 
 // Render Player List
-let playerNames = ['Steven', 'Jeff', 'Jordan', 'Mike']
+let playerNames = ["Steven", "Jeff", "Jordan", "Mike"]
 
 // Websocket
-const ws = new WebSocket(`ws://${host}:8080/join?gameCode=${gameCode}&name=${playerName}`)
+const ws = new WebSocket(
+	`ws://${host}:8080/join?gameCode=${gameCode}&name=${playerName}`
+)
 
-ws.addEventListener('message', (event) => {
+ws.addEventListener("message", (event) => {
 	// data can be {names: string[]} or {start: bool; portNumber: number}
 	data = JSON.parse(event.data)
 	if (data.names) {
 		playerNames = data.names ?? []
 
 		while (playerList.firstChild) {
-			playerList.removeChild(playerList.lastChild);
+			playerList.removeChild(playerList.lastChild)
 		}
 
-		playerNames.forEach(element => {
-			playerText = document.createElement("p");
+		playerNames.forEach((element) => {
+			playerText = document.createElement("p")
 			playerText.innerText = element
 			playerList.appendChild(playerText)
 		})
 	}
 	if (data.start) {
 		const portNumber = data.portNumber
-		window.history.pushState({}, "", `/play?portNumber=${portNumber}`)// this doesn't automatically fetch new page
+		window.history.pushState({}, "", `/play?portNumber=${portNumber}`) // this doesn't automatically fetch new page
 		window.location.reload()
 	}
 })
