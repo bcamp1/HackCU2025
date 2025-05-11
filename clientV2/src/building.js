@@ -15,11 +15,11 @@ export class Building {
 		this.gridPosition = new THREE.Vector3(x, y, z)
 		this.modelsDict = modelsDict
 		this.pId = pId
-        if (resources) {
-            this.resources = resources;
-        } else {
-            this.resources = [0,0,0];
-        }
+		if (resources) {
+			this.resources = resources;
+		} else {
+			this.resources = [0, 0, 0];
+		}
 
 		// Construct mesh
 		if (this.type == "house") {
@@ -212,7 +212,7 @@ export class Building {
 		}
 	}
 
-	async loadModel(type) {}
+	async loadModel(type) { }
 
 	moveTo(position) {
 		// this.mesh.position.set(position.x + this.offset.x, position.y + this.offset.y, position.z + this.offset.z);
@@ -249,29 +249,29 @@ export class Building {
 		this.changeRenderOrder()
 		const unobstructedColor = new THREE.Color().setHex(0x00ff00)
 
-        this.model.traverse((child) => {
-            if (child.isMesh) {
-                child.castShadow = false;
-                child.receiveShadow = false;
-                child.material.color = unobstructedColor;
-                child.material.opacity = 0.2;
-            }
-        });
-    }
+		this.model.traverse((child) => {
+			if (child.isMesh) {
+				child.castShadow = false;
+				child.receiveShadow = false;
+				child.material.color = unobstructedColor;
+				child.material.opacity = 0.2;
+			}
+		});
+	}
 
 	setAppearance_CantBuild() {
 		this.changeRenderOrder()
 		const obstructedColor = new THREE.Color().setHex(0xff0000)
 
-        this.model.traverse((child) => {
-            if (child.isMesh) {
-                child.castShadow = false;
-                child.receiveShadow = false;
-                child.material.color = obstructedColor;
-                child.material.opacity = 0.4;
-            }
-        });
-    }
+		this.model.traverse((child) => {
+			if (child.isMesh) {
+				child.castShadow = false;
+				child.receiveShadow = false;
+				child.material.color = obstructedColor;
+				child.material.opacity = 0.4;
+			}
+		});
+	}
 
 	changeRenderOrder() {
 		this.model.traverse((child) => {

@@ -1,6 +1,7 @@
 import * as THREE from "three"
 import { Scene } from "./scene.js"
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
+import { ModelsDict } from "./types.js"
 
 InitScene()
 var gameState = {}
@@ -62,6 +63,7 @@ async function InitScene() {
 		scene.isBuilding = true
 		scene.currentBuildingType = "barracks"
 	})
+
 	const addKnight = document.getElementById("addKnight")
 	addKnight?.addEventListener("click", () => {
 		console.log("Adding knight")
@@ -74,12 +76,15 @@ async function InitScene() {
 	})
 
 	const playerNumElem = document.getElementById("player-number")
+	if (!playerNumElem) {
+		throw new Error("Player number element not found")
+	}
 
-	const goldDisplay = document.getElementById("gold")
-	const woodDisplay = document.getElementById("wood")
-	const stoneDisplay = document.getElementById("stone")
-	const populationDisplay = document.getElementById("population")
-	const playerLabel = document.getElementById("player-label")
+	//const goldDisplay = document.getElementById("gold")
+	//const woodDisplay = document.getElementById("wood")
+	//const stoneDisplay = document.getElementById("stone")
+	//const populationDisplay = document.getElementById("population")
+	//const playerLabel = document.getElementById("player-label")
 
 	// Handle resizing
 	// window.addEventListener("resize", () => {
@@ -126,7 +131,8 @@ async function InitScene() {
 		event.preventDefault()
 	})
 
-	const handleMessage = (event) => {
+	const handleMessage = (event: MessageEvent) => {
+		// TODO: Make this use binary data
 		const message = JSON.parse(event.data)
 		console.log(message)
 		switch (message.messageType) {
@@ -146,52 +152,52 @@ async function InitScene() {
 }
 
 async function loadModels() {
-	var modelsDict = {}
+	var modelsDict: ModelsDict = {}
 	const houseModel_red = await loadModel(
 		"public/models/buildings/house/house_red.glb"
-	)
+	) as THREE.Object3D
 	const houseModel_blue = await loadModel(
 		"public/models/buildings/house/house_blue.glb"
-	)
+	) as THREE.Object3D
 	const townhallModel_red = await loadModel(
 		"public/models/buildings/townhall/townhall_red.glb"
-	)
+	) as THREE.Object3D
 	const townhallModel_blue = await loadModel(
 		"public/models/buildings/townhall/townhall_blue.glb"
-	)
+	) as THREE.Object3D
 	const barracksModel_red = await loadModel(
 		"public/models/buildings/barracks/barracks_red.glb"
-	)
+	) as THREE.Object3D
 	const barracksModel_blue = await loadModel(
 		"public/models/buildings/barracks/barracks_blue.glb"
-	)
+	) as THREE.Object3D
 	const goldModel = await loadModelResource(
 		"public/models/buildings/nodes/gold/gold.glb"
-	)
+	) as THREE.Object3D
 	const stoneModel = await loadModelResource(
 		"public/models/buildings/nodes/stone/stone.glb"
-	)
+	) as THREE.Object3D
 	const wood = await loadModelResource(
 		"public/models/buildings/nodes/wood/wood.glb"
-	)
+	) as THREE.Object3D
 	const knight_red_idle = await loadModelResource(
 		"public/models/characters/knight_red/knight_red_idle.glb"
-	)
+	) as THREE.Object3D
 	const knight_blue_idle = await loadModelResource(
 		"public/models/characters/knight_blue/knight_blue_idle.glb"
-	)
+	) as THREE.Object3D
 	const knight_red_attack = await loadModelResource(
 		"public/models/characters/knight_red/knight_red_attack.glb"
-	)
+	) as THREE.Object3D
 	const knight_blue_attack = await loadModelResource(
 		"public/models/characters/knight_blue/knight_blue_attack.glb"
-	)
+	) as THREE.Object3D
 	const worker_red = await loadModelResource(
 		"public/models/characters/worker/worker_red.glb"
-	)
+	) as THREE.Object3D
 	const worker_blue = await loadModelResource(
 		"public/models/characters/worker/worker_blue.glb"
-	)
+	) as THREE.Object3D
 	modelsDict.house = [houseModel_blue, houseModel_red]
 	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
 	modelsDict.barracks = [barracksModel_blue, barracksModel_red]
@@ -205,7 +211,7 @@ async function loadModels() {
 	return modelsDict
 }
 
-async function loadModel(path) {
+async function loadModel(path: string) {
 	const loader = new GLTFLoader()
 
 	return new Promise((resolve, reject) => {
@@ -217,6 +223,7 @@ async function loadModel(path) {
 
 				model.traverse((child) => {
 					if (child.isMesh) {
+						const child: THREE.Object3D
 						const edges = new THREE.EdgesGeometry(child.geometry)
 						const lineMaterial = new THREE.LineBasicMaterial({
 							color: 0x000000,
