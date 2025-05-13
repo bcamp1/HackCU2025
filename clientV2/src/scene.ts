@@ -6,54 +6,54 @@ import { Knight, Builder } from "./guys"
 import { BuildingType } from "./types"
 
 interface Unit {
-	model: THREE.Object3D;
-	height: number;
-	halo?: THREE.Mesh;
+	model: THREE.Object3D
+	height: number
+	halo?: THREE.Mesh
 }
 
 type UnitType = "knight" | "builder"
 
 interface Command {
 	moveUnit?: {
-		id: number;
-		type: string;
-		pos: { x: number; y: number; z: number };
-	};
+		id: number
+		type: string
+		pos: { x: number; y: number; z: number }
+	}
 	placeBuilding?: {
-		type: string;
-		pos: { x: number; z: number };
-	};
+		type: string
+		pos: { x: number; z: number }
+	}
 }
 
 export class Scene {
-	keysPressed: Record<string, boolean> = {};
-	buildings: Building[] = [];
-	playerId: number;
-	moveType: number = 0;
-	builderIds: Record<string, any> = {};
-	unitsMap: Record<string, Unit | Building> = {};
-	isBuilding: boolean = false;
-	canBuild: boolean = false;
-	currentBuildingType: string | false = false;
-	mouseX: number = 0;
-	mouseY: number = 0;
-	modelsDict: any;
-	zoom: number = 1;
-	commandBuffer: Command[] = [];
-	container: HTMLElement | null;
-	scene: THREE.Scene;
-	camera: THREE.OrthographicCamera;
-	renderer: THREE.WebGLRenderer;
-	groundPlane: THREE.Mesh;
-	selectionBox: SelectionBox;
-	helper: SelectionHelper;
-	selectedUnits: any[] = [];
-	selectableObjects: any[] = [];
-	grid: THREE.GridHelper;
-	TEMP_house: Building;
-	TEMP_townhall: Building;
-	TEMP_barracks: Building;
-	cubes: THREE.Mesh[] = [];
+	keysPressed: Record<string, boolean> = {}
+	buildings: Building[] = []
+	playerId: number
+	moveType: number = 0
+	builderIds: Record<string, any> = {}
+	unitsMap: Record<string, Unit | Building> = {}
+	isBuilding: boolean = false
+	canBuild: boolean = false
+	currentBuildingType: string | false = false
+	mouseX: number = 0
+	mouseY: number = 0
+	modelsDict: any
+	zoom: number = 1
+	commandBuffer: Command[] = []
+	container: HTMLElement | null
+	scene: THREE.Scene
+	camera: THREE.OrthographicCamera
+	renderer: THREE.WebGLRenderer
+	groundPlane: THREE.Mesh
+	selectionBox: SelectionBox
+	helper: SelectionHelper
+	selectedUnits: any[] = []
+	selectableObjects: any[] = []
+	grid: THREE.GridHelper
+	TEMP_house: Building
+	TEMP_townhall: Building
+	TEMP_barracks: Building
+	cubes: THREE.Mesh[] = []
 	constructor(containerId: string, models: any) {
 		this.keysPressed = {}
 		this.buildings = []
@@ -142,7 +142,6 @@ export class Scene {
 				throw new Error("Failed to create image data for noise")
 			}
 
-
 			// Loop through each pixel and add a slight random offset to the base color
 			for (let y = 0; y < noiseCanvas.height; y++) {
 				for (let x = 0; x < noiseCanvas.width; x++) {
@@ -167,7 +166,6 @@ export class Scene {
 					r = r * (1 - desaturationFactor) + darkGray * desaturationFactor
 					g = g * (1 - desaturationFactor) + darkGray * desaturationFactor
 					b = b * (1 - desaturationFactor) + darkGray * desaturationFactor
-
 
 					// Final clamp just in case
 					noiseData[index] = Math.min(255, Math.max(0, r))
@@ -284,7 +282,7 @@ export class Scene {
 		lights[3].position.set(0, 1 * d, 1 * d)
 
 		lights.forEach((light) => {
-			if (light.isDirectionalLight) {
+			if (light instanceof THREE.DirectionalLight) {
 				light.castShadow = true
 				light.shadow.mapSize.width = 2048 * 3
 				light.shadow.mapSize.height = 2048 * 3
@@ -303,7 +301,7 @@ export class Scene {
 	}
 
 	onWindowResize() {
-		this.camera.aspect = window.innerWidth / window.innerHeight
+		// this.camera.aspect = window.innerWidth / window.innerHeight
 		this.camera.updateProjectionMatrix()
 		this.renderer.setSize(window.innerWidth, window.innerHeight)
 	}
@@ -399,7 +397,7 @@ export class Scene {
 		// Reset all
 		for (const selection of this.selectableObjects) {
 			if (selection.unit && selection.unit.halo) {
-				selection.unit.halo.visible = false;
+				selection.unit.halo.visible = false
 			}
 		}
 		// Update Selected
@@ -407,7 +405,7 @@ export class Scene {
 			const object = this.selectedUnits[i]
 
 			if (object.unit && object.unit.halo) {
-				object.unit.halo.visible = true;
+				object.unit.halo.visible = true
 			}
 		}
 	}
@@ -431,7 +429,14 @@ export class Scene {
 	}
 
 	// TODO: Update type of unit type
-	addUnit(id: number, pId: number, type: UnitType, x: number, y: number, z: number) {
+	addUnit(
+		id: number,
+		pId: number,
+		type: UnitType,
+		x: number,
+		y: number,
+		z: number
+	) {
 		let unit
 		switch (type) {
 			case "knight":
@@ -446,14 +451,13 @@ export class Scene {
 		}
 		if (unit && unit.mesh) {
 			unit.mesh.position.set(x, y, z)
-			unit.mesh.scale.set(1.15, 1.15, 1.15);
+			unit.mesh.scale.set(1.15, 1.15, 1.15)
 			unit.isSelectable = Number(pId) === Number(this.playerId)
 			unit.isMoveable = Number(pId) === Number(this.playerId)
 			unit.entityId = id
 
 			if (unit.isSelectable) {
 				// TODO: Fix this
-
 				//unit.mesh.traverse((child) => {
 				//	if (child.isMesh) {
 				//		this.selectableObjects.push(child)
@@ -463,7 +467,6 @@ export class Scene {
 
 			this.unitsMap[id] = unit
 			this.scene.add(unit.mesh)
-
 		} else {
 			console.error(`Failed to create unit of type: ${type}`)
 		}
@@ -524,7 +527,13 @@ export class Scene {
 		}
 	}
 
-	createBuilding(id: number, pId: number, type: BuildingType, x: number, z: number) {
+	createBuilding(
+		id: number,
+		pId: number,
+		type: BuildingType,
+		x: number,
+		z: number
+	) {
 		const newBuilding = new Building(
 			type,
 			id,
@@ -538,7 +547,15 @@ export class Scene {
 		this.buildings.push(newBuilding)
 		this.unitsMap[id] = newBuilding
 	}
-	createResourceNode(id: number, type: BuildingType, x: number, z: number, gold: number, stone: number, wood: number) {
+	createResourceNode(
+		id: number,
+		type: BuildingType,
+		x: number,
+		z: number,
+		gold: number,
+		stone: number,
+		wood: number
+	) {
 		const newBuilding = new Building(
 			type,
 			id,
@@ -554,7 +571,11 @@ export class Scene {
 		this.unitsMap[id] = newBuilding
 	}
 
-	checkGridCollisions(gridLocation: THREE.Vector3, width: number, height: number) {
+	checkGridCollisions(
+		gridLocation: THREE.Vector3,
+		width: number,
+		height: number
+	) {
 		var collide = false
 		const buildingPositions: THREE.Vector3[] = []
 		this.buildings.forEach((building) => {
