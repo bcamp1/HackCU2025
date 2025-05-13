@@ -3,9 +3,10 @@ import { SelectionBox } from "three/examples/jsm/interactive/SelectionBox"
 import { SelectionHelper } from "three/examples/jsm/interactive/SelectionHelper"
 import { Building } from "./building"
 import { Knight, Builder } from "./guys"
+import { BuildingType } from "./types"
 
 interface Unit {
-	mesh: THREE.Object3D;
+	model: THREE.Object3D;
 	height: number;
 	halo?: THREE.Mesh;
 }
@@ -451,11 +452,13 @@ export class Scene {
 			unit.entityId = id
 
 			if (unit.isSelectable) {
-				unit.mesh.traverse((child) => {
-					if (child.isMesh) {
-						this.selectableObjects.push(child)
-					}
-				});
+				// TODO: Fix this
+
+				//unit.mesh.traverse((child) => {
+				//	if (child.isMesh) {
+				//		this.selectableObjects.push(child)
+				//	}
+				//});
 			}
 
 			this.unitsMap[id] = unit
@@ -468,7 +471,7 @@ export class Scene {
 
 	moveUnit(id: number, x: number, z: number) {
 		const unit = this.unitsMap[id]
-		unit.mesh.position.set(x, unit.height / 2, z)
+		unit.model.position.set(x, unit.height / 2, z)
 	}
 
 	removeUnit(id: number) {
@@ -480,7 +483,7 @@ export class Scene {
 			this.buildings = this.buildings.filter((b) => b.id !== id)
 			this.scene.remove(building.model)
 		} else {
-			this.scene.remove(unit.mesh)
+			this.scene.remove(unit.model)
 			this.renderer.renderLists.dispose()
 		}
 
@@ -491,15 +494,10 @@ export class Scene {
 		this.renderer.setAnimationLoop(this.animate.bind(this))
 	}
 
-	rotateCube(x, y) {
-		this.cube.rotation.x += x
-		this.cube.rotation.y += y
-	}
-
-	handleClick(mouseButton, mouseX, mouseY) {
+	handleClick(mouseButton: number, mouseX: number, mouseY: number) {
 		const clickLocation = this.getMouseCoordinatesOnGroundPlane(mouseX, mouseY)
 
-		if (this.isBuilding) {
+		if (this.isBuilding && this.currentBuildingType) {
 			if (this.canBuild) {
 				if (mouseButton == 0 && clickLocation) {
 					// Left click
@@ -526,7 +524,7 @@ export class Scene {
 		}
 	}
 
-	createBuilding(id, pId, type, x, z) {
+	createBuilding(id: number, pId: number, type: BuildingType, x: number, z: number) {
 		const newBuilding = new Building(
 			type,
 			id,
@@ -540,7 +538,7 @@ export class Scene {
 		this.buildings.push(newBuilding)
 		this.unitsMap[id] = newBuilding
 	}
-	createResourceNode(id, type, x, z, gold, stone, wood) {
+	createResourceNode(id: number, type: BuildingType, x: number, z: number, gold: number, stone: number, wood: number) {
 		const newBuilding = new Building(
 			type,
 			id,
@@ -556,9 +554,9 @@ export class Scene {
 		this.unitsMap[id] = newBuilding
 	}
 
-	checkGridCollisions(gridLocation, width, height) {
+	checkGridCollisions(gridLocation: THREE.Vector3, width: number, height: number) {
 		var collide = false
-		const buildingPositions = []
+		const buildingPositions: THREE.Vector3[] = []
 		this.buildings.forEach((building) => {
 			const buildingPos = building.gridPosition
 			for (var x = 0; x < building.width; x++) {
@@ -591,7 +589,7 @@ export class Scene {
 		return collide
 	}
 
-	getMouseCoordinatesOnGroundPlane(mouseX, mouseY) {
+	getMouseCoordinatesOnGroundPlane(mouseX: number, mouseY: number) {
 		const raycaster = new THREE.Raycaster()
 		const mousePosition = new THREE.Vector2(mouseX, mouseY)
 		raycaster.setFromCamera(mousePosition, this.camera)
@@ -603,7 +601,7 @@ export class Scene {
 		}
 	}
 
-	getGridCoordinates(position) {
+	getGridCoordinates(position: THREE.Vector3) {
 		const x = Math.floor(position.x)
 		const z = Math.floor(position.z)
 

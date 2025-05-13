@@ -2,10 +2,10 @@
 import * as THREE from "three";
 
 // Define color constants
-const p1BuilderColor = 0x307c91;
-const p2BuilderColor = 0xb83232;
-const p1KnightColor = 0x2c3e91;
-const p2KnightColor = 0x800000;
+//const p1BuilderColor = 0x307c91;
+//const p2BuilderColor = 0xb83232;
+//const p1KnightColor = 0x2c3e91;
+//const p2KnightColor = 0x800000;
 
 // Define interfaces for the expected scene structure
 interface GameScene {
@@ -81,15 +81,15 @@ class Unit {
 
 export class Knight extends Unit {
 	constructor(id: number, playerId: number, scene: GameScene) {
-		const color = playerId === 1 ? p1KnightColor : p2KnightColor;
-		super(id, 0.5, color, playerId, true, scene);
+		//const color = playerId === 1 ? p1KnightColor : p2KnightColor;
+		super(id, 0.5, playerId, true, scene);
 	}
 }
 
 export class Builder extends Unit {
 	constructor(id: number, playerId: number, scene: GameScene) {
-		const color = playerId === 1 ? p1BuilderColor : p2BuilderColor;
-		super(id, 0.25, color, playerId, false, scene);
+		//const color = playerId === 1 ? p1BuilderColor : p2BuilderColor;
+		super(id, 0.25, playerId, false, scene);
 	}
 }
 

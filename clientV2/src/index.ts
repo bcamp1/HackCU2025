@@ -1,15 +1,14 @@
 import * as THREE from "three"
-import { Scene } from "./scene.js"
+import { Scene } from "./scene"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
-import { ModelsDict } from "./types.js"
+import { ModelsDict } from "./types"
 
 InitScene()
-var gameState = {}
 
 const urlSearchParams = new URLSearchParams(window.location.search)
 const port = urlSearchParams.get("portNumber")
 const host = "10.0.0.186"
-console.log("HELLP")
+console.log("HELLP me tYpeScrIpt")
 
 
 
@@ -36,8 +35,8 @@ async function InitScene() {
 		}
 	});
 
-	socket.addEventListener("open", function(event) {
-		console.log("Connected to server", event.data)
+	socket.addEventListener("open", (event: Event) => {
+		console.log("Connected to server", event)
 	})
 
 	socket.addEventListener("error", function(event) {
@@ -67,12 +66,12 @@ async function InitScene() {
 	const addKnight = document.getElementById("addKnight")
 	addKnight?.addEventListener("click", () => {
 		console.log("Adding knight")
-		scene.commandBuffer.push({ createKnight: { some: "knight" } })
+		//scene.commandBuffer.push({ createKnight: { some: "knight" } })
 	})
 	// ADD BARRACKS BUTTON
 	const addWorker = document.getElementById("addWorker")
 	addWorker?.addEventListener("click", () => {
-		scene.commandBuffer.push({ createBuilder: { some: "builder" } })
+		//scene.commandBuffer.push({ createBuilder: { some: "builder" } })
 	})
 
 	const playerNumElem = document.getElementById("player-number")
@@ -221,22 +220,23 @@ async function loadModel(path: string) {
 				let model = gltf.scene
 				model.rotation.x = -Math.PI / 2
 
-				model.traverse((child) => {
-					if (child.isMesh) {
-						const child: THREE.Object3D
-						const edges = new THREE.EdgesGeometry(child.geometry)
-						const lineMaterial = new THREE.LineBasicMaterial({
-							color: 0x000000,
-							linewidth: 10,
-						})
-						const outline = new THREE.LineSegments(edges, lineMaterial)
-						child.userData.outline = outline
-						child.add(outline)
-						child.castShadow = true
-					}
-				})
-				console.log("Model loaded")
-				resolve(model)
+				console.log("model", model)
+
+				//model.traverse((child) => {
+				//	if (child.isMesh) {
+				//		const child: THREE.Object3D
+				//		const edges = new THREE.EdgesGeometry(child.geometry)
+				//		const lineMaterial = new THREE.LineBasicMaterial({
+				//			color: 0x000000,
+				//			linewidth: 10,
+				//		})
+				//		const outline = new THREE.LineSegments(edges, lineMaterial)
+				//		child.userData.outline = outline
+				//		child.add(outline)
+				//		child.castShadow = true
+				//	}
+				//})
+				//resolve(model)
 			},
 			undefined,
 			(error) => {
@@ -247,7 +247,7 @@ async function loadModel(path: string) {
 	})
 }
 
-async function loadModelResource(path) {
+async function loadModelResource(path: string) {
 	const loader = new GLTFLoader()
 
 	return new Promise((resolve, reject) => {
@@ -257,13 +257,14 @@ async function loadModelResource(path) {
 				let model = gltf.scene
 				model.rotation.x = -Math.PI / 2
 
-				model.traverse((child) => {
-					if (child.isMesh) {
-						child.castShadow = true
-					}
-				})
-				console.log("Model loaded")
-				resolve(model)
+				console.log("model", model)
+				//model.traverse((child) => {
+				//	if (child.isMesh) {
+				//		child.castShadow = true
+				//	}
+				//})
+				//console.log("Model loaded")
+				//resolve(model)
 			},
 			undefined,
 			(error) => {
@@ -274,7 +275,7 @@ async function loadModelResource(path) {
 	})
 }
 
-async function loadCharacter(path) {
+async function loadCharacter(path: string) {
 	const loader = new GLTFLoader()
 
 	return new Promise((resolve, reject) => {
@@ -284,13 +285,14 @@ async function loadCharacter(path) {
 				let model = gltf.scene
 				model.rotation.x = -Math.PI / 2
 
-				model.traverse((child) => {
-					if (child.isMesh) {
-						child.castShadow = true
-					}
-				})
-				console.log("Model loaded")
-				resolve(model)
+				console.log("model", model)
+				//model.traverse((child) => {
+				//	if (child.isMesh) {
+				//		child.castShadow = true
+				//	}
+				//})
+				//console.log("Model loaded")
+				//resolve(model)
 			},
 			undefined,
 			(error) => {
