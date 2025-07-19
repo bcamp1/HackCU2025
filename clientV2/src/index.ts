@@ -7,7 +7,7 @@ InitScene()
 
 const urlSearchParams = new URLSearchParams(window.location.search)
 const port = urlSearchParams.get("portNumber")
-const host = "10.0.0.186"
+const host = "10.0.0.100"
 console.log("HELLP me tYpeScrIpt")
 
 async function InitScene() {
@@ -41,7 +41,6 @@ async function InitScene() {
 		console.error("Error connecting to server", event)
 	})
 	// UI interaction: Rotate the cube when the button is clicked
-	// ADD HOUSE BUTTON
 	// ADD HOUSE BUTTON
 	const addHouseButton = document.getElementById("addHouse")
 	addHouseButton?.addEventListener("click", () => {
@@ -210,16 +209,12 @@ async function loadModels() {
 
 async function loadModel(path: string) {
 	const loader = new GLTFLoader()
-
 	return new Promise((resolve, reject) => {
 		loader.load(
 			path,
 			(gltf) => {
 				let model = gltf.scene
 				model.rotation.x = -Math.PI / 2
-
-				console.log("model", model)
-
 				model.traverse((child) => {
 					if (child instanceof THREE.Mesh) {
 						const edges = new THREE.EdgesGeometry(child.geometry)
@@ -246,7 +241,6 @@ async function loadModel(path: string) {
 
 async function loadModelResource(path: string) {
 	const loader = new GLTFLoader()
-
 	return new Promise((resolve, reject) => {
 		loader.load(
 			path,
@@ -254,7 +248,6 @@ async function loadModelResource(path: string) {
 				let model = gltf.scene
 				model.rotation.x = -Math.PI / 2
 
-				console.log("model", model)
 				model.traverse((child) => {
 					if (child instanceof THREE.Mesh) {
 						child.castShadow = true
@@ -262,34 +255,6 @@ async function loadModelResource(path: string) {
 				})
 				console.log("Model loaded")
 				resolve(model)
-			},
-			undefined,
-			(error) => {
-				console.error("Found an error", error)
-				reject(error)
-			}
-		)
-	})
-}
-
-async function loadCharacter(path: string) {
-	const loader = new GLTFLoader()
-
-	return new Promise((resolve, reject) => {
-		loader.load(
-			path,
-			(gltf) => {
-				let model = gltf.scene
-				model.rotation.x = -Math.PI / 2
-
-				console.log("model", model)
-				//model.traverse((child) => {
-				//	if (child.isMesh) {
-				//		child.castShadow = true
-				//	}
-				//})
-				//console.log("Model loaded")
-				//resolve(model)
 			},
 			undefined,
 			(error) => {

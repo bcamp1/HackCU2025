@@ -1,10 +1,8 @@
-console.log("LOBBY")
-
 const startButton = document.getElementById("start-game-button")
 const gameIdLabel = document.getElementById("game-id-label")
 const playerList = document.getElementById("player-list")
 
-const host = "10.0.0.186"
+const host = "10.0.0.100"
 
 // Get params
 const urlSearchParams = new URLSearchParams(window.location.search)
