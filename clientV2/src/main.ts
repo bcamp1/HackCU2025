@@ -3,13 +3,14 @@ import { Command, Scene } from "./scene/scene"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
 import { ModelsDict } from "./types/models"
 import { Game } from "./game/game"
+import { initPlayer } from "./game/initPlayer"
+import { initialiazePlayerDisplay } from "./uiHelpers/uiHelpers"
 
 InitScene()
 
 const urlSearchParams = new URLSearchParams(window.location.search)
 const port = urlSearchParams.get("portNumber")
 const host = "10.0.0.100"
-console.log("HELLP me tYpeScrIpt")
 
 const sleep = (ms: number) => {
 	return new Promise((resolve) => { setTimeout(resolve, ms) })
@@ -19,7 +20,8 @@ async function InitScene() {
 	const models = await loadModels()
 	const commandBuffer: Command[] = []
 	const scene = new Scene("threejs-container", models, commandBuffer)
-	const game = new Game(scene, commandBuffer)
+	const game = new Game(scene)
+	const player = initPlayer(game)
 	scene.startAnimationLoop()
 
 	// const socket = new WebSocket("ws://10.0.0.43:8080/ws")
@@ -83,11 +85,7 @@ async function InitScene() {
 		throw new Error("Player number element not found")
 	}
 
-	//const goldDisplay = document.getElementById("gold")
-	//const woodDisplay = document.getElementById("wood")
-	//const stoneDisplay = document.getElementById("stone")
-	//const populationDisplay = document.getElementById("population")
-	//const playerLabel = document.getElementById("player-label")
+	initialiazePlayerDisplay(player)
 
 	// Handle resizing
 	// window.addEventListener("resize", () => {

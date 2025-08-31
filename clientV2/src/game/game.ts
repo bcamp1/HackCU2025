@@ -1,9 +1,17 @@
-import { Command, PlaceBuildingCommand, Scene } from "../scene/scene"
+import { Unit } from "../guys/guys"
+import { PlaceBuildingCommand, Scene } from "../scene/scene"
 import { Building } from "../structures/building"
 
-type Player = {
+export type Player = {
 	ip: string
+	id: number
 	buildings: Building[]
+	units: Unit[]
+	gold: number
+	wood: number
+	stone: number
+	population: number
+	populationCap: number
 }
 
 const handlePlaceBuildingCommand = (scene: Scene, command: PlaceBuildingCommand) => {
