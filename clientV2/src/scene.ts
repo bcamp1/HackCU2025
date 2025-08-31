@@ -1,9 +1,9 @@
 import * as THREE from "three"
 import { SelectionBox } from "three/examples/jsm/interactive/SelectionBox"
 import { SelectionHelper } from "three/examples/jsm/interactive/SelectionHelper"
-import { Building } from "./building"
 import { Knight, Builder } from "./guys"
-import { BuildingType } from "./types"
+import { BuildingType } from "./types/models"
+import { Building } from "./structures/building"
 
 interface Unit {
 	model: THREE.Object3D

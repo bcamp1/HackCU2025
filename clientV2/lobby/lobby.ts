@@ -6,9 +6,9 @@ const host = "10.0.0.100"
 
 // Get params
 const urlSearchParams = new URLSearchParams(window.location.search)
-const gameCode = urlSearchParams.get("gameCode").toUpperCase()
+const gameCode = urlSearchParams?.get("gameCode")?.toUpperCase()
 const playerName = urlSearchParams.get("name")
-gameIdLabel.innerText = `Code: ${gameCode}`
+if (gameIdLabel) gameIdLabel.innerText = `Code: ${gameCode}`
 
 console.log(gameIdLabel)
 console.log(startButton)
@@ -25,18 +25,18 @@ const ws = new WebSocket(
 
 ws.addEventListener("message", (event) => {
 	// data can be {names: string[]} or {start: bool; portNumber: number}
-	data = JSON.parse(event.data)
+	const data = JSON.parse(event.data)
 	if (data.names) {
 		playerNames = data.names ?? []
 
-		while (playerList.firstChild) {
-			playerList.removeChild(playerList.lastChild)
+		while (playerList?.firstChild) {
+			if (playerList.lastChild) playerList.removeChild(playerList.lastChild)
 		}
 
 		playerNames.forEach((element) => {
-			playerText = document.createElement("p")
+			const playerText = document.createElement("p")
 			playerText.innerText = element
-			playerList.appendChild(playerText)
+			playerList?.appendChild(playerText)
 		})
 	}
 	if (data.start) {
