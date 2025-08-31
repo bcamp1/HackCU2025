@@ -1,7 +1,8 @@
 import * as THREE from "three"
-import { Scene } from "./scene"
+import { Command, Scene } from "./scene/scene"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
 import { ModelsDict } from "./types/models"
+import { Game } from "./game/game"
 
 InitScene()
 
@@ -10,9 +11,15 @@ const port = urlSearchParams.get("portNumber")
 const host = "10.0.0.100"
 console.log("HELLP me tYpeScrIpt")
 
+const sleep = (ms: number) => {
+	return new Promise((resolve) => { setTimeout(resolve, ms) })
+}
+
 async function InitScene() {
 	const models = await loadModels()
-	const scene = new Scene("threejs-container", models)
+	const commandBuffer: Command[] = []
+	const scene = new Scene("threejs-container", models, commandBuffer)
+	const game = new Game(scene, commandBuffer)
 	scene.startAnimationLoop()
 
 	// const socket = new WebSocket("ws://10.0.0.43:8080/ws")
@@ -145,54 +152,59 @@ async function InitScene() {
 	socket.addEventListener("message", function (event) {
 		handleMessage(event)
 	})
+
+	while (1) {
+		game.gameLoop()
+		await sleep(100)
+	}
 }
 
 async function loadModels() {
 	var modelsDict: ModelsDict = {}
 	const houseModel_red = (await loadModel(
-		"public/models/buildings/house/house_red.glb"
+		"/models/buildings/house/house_red.glb"
 	)) as THREE.Object3D
 	const houseModel_blue = (await loadModel(
-		"public/models/buildings/house/house_blue.glb"
+		"/models/buildings/house/house_blue.glb"
 	)) as THREE.Object3D
 	const townhallModel_red = (await loadModel(
-		"public/models/buildings/townhall/townhall_red.glb"
+		"/models/buildings/townhall/townhall_red.glb"
 	)) as THREE.Object3D
 	const townhallModel_blue = (await loadModel(
-		"public/models/buildings/townhall/townhall_blue.glb"
+		"/models/buildings/townhall/townhall_blue.glb"
 	)) as THREE.Object3D
 	const barracksModel_red = (await loadModel(
-		"public/models/buildings/barracks/barracks_red.glb"
+		"/models/buildings/barracks/barracks_red.glb"
 	)) as THREE.Object3D
 	const barracksModel_blue = (await loadModel(
-		"public/models/buildings/barracks/barracks_blue.glb"
+		"/models/buildings/barracks/barracks_blue.glb"
 	)) as THREE.Object3D
 	const goldModel = (await loadModelResource(
-		"public/models/buildings/nodes/gold/gold.glb"
+		"/models/buildings/nodes/gold/gold.glb"
 	)) as THREE.Object3D
 	const stoneModel = (await loadModelResource(
-		"public/models/buildings/nodes/stone/stone.glb"
+		"/models/buildings/nodes/stone/stone.glb"
 	)) as THREE.Object3D
 	const wood = (await loadModelResource(
-		"public/models/buildings/nodes/wood/wood.glb"
+		"/models/buildings/nodes/wood/wood.glb"
 	)) as THREE.Object3D
 	const knight_red_idle = (await loadModelResource(
-		"public/models/characters/knight_red/knight_red_idle.glb"
+		"/models/characters/knight_red/knight_red_idle.glb"
 	)) as THREE.Object3D
 	const knight_blue_idle = (await loadModelResource(
-		"public/models/characters/knight_blue/knight_blue_idle.glb"
+		"/models/characters/knight_blue/knight_blue_idle.glb"
 	)) as THREE.Object3D
 	const knight_red_attack = (await loadModelResource(
-		"public/models/characters/knight_red/knight_red_attack.glb"
+		"/models/characters/knight_red/knight_red_attack.glb"
 	)) as THREE.Object3D
 	const knight_blue_attack = (await loadModelResource(
-		"public/models/characters/knight_blue/knight_blue_attack.glb"
+		"/models/characters/knight_blue/knight_blue_attack.glb"
 	)) as THREE.Object3D
 	const worker_red = (await loadModelResource(
-		"public/models/characters/worker/worker_red.glb"
+		"/models/characters/worker/worker_red.glb"
 	)) as THREE.Object3D
 	const worker_blue = (await loadModelResource(
-		"public/models/characters/worker/worker_blue.glb"
+		"/models/characters/worker/worker_blue.glb"
 	)) as THREE.Object3D
 	modelsDict.house = [houseModel_blue, houseModel_red]
 	modelsDict.townhall = [townhallModel_blue, townhallModel_red]
