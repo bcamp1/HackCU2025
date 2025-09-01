@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
 import { ModelsDict } from "./types/models"
 import { Game } from "./game/game"
 import { initPlayer } from "./game/initPlayer"
-import { initialiazePlayerDisplay } from "./uiHelpers/uiHelpers"
+import { initialiazePlayerDisplay, initializeControlButtons } from "./uiHelpers/uiHelpers"
 
 InitScene()
 
@@ -49,36 +49,8 @@ async function InitScene() {
 	socket.addEventListener("error", function (event) {
 		console.error("Error connecting to server", event)
 	})
-	// UI interaction: Rotate the cube when the button is clicked
-	// ADD HOUSE BUTTON
-	const addHouseButton = document.getElementById("addHouse")
-	addHouseButton?.addEventListener("click", () => {
-		scene.isBuilding = true
-		scene.currentBuildingType = "house"
-	})
-	// ADD TOWN HALL BUTTON
-	const addTownHallButton = document.getElementById("addTownHall")
-	addTownHallButton?.addEventListener("click", () => {
-		scene.isBuilding = true
-		scene.currentBuildingType = "townhall"
-	})
-	// ADD BARRACKS BUTTON
-	const addBarracksButton = document.getElementById("addBarracks")
-	addBarracksButton?.addEventListener("click", () => {
-		scene.isBuilding = true
-		scene.currentBuildingType = "barracks"
-	})
 
-	const addKnight = document.getElementById("addKnight")
-	addKnight?.addEventListener("click", () => {
-		console.log("Adding knight")
-		//scene.commandBuffer.push({ createKnight: { some: "knight" } })
-	})
-	// ADD BARRACKS BUTTON
-	const addWorker = document.getElementById("addWorker")
-	addWorker?.addEventListener("click", () => {
-		//scene.commandBuffer.push({ createBuilder: { some: "builder" } })
-	})
+	initializeControlButtons(scene)
 
 	const playerNumElem = document.getElementById("player-number")
 	if (!playerNumElem) {
